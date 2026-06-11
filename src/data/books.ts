@@ -11,6 +11,7 @@ export const SAMPLE_BOOKS: Book[] = [
     difficulty: "Easy",
     reading_time: 15,
     description: "Follow Alice down the rabbit hole into a whimsical underworld of bizarre logic, talking animals, and mathematical riddles. Perfect for building reading confidence.",
+    ageGroup: "Kids",
     chapters: [
       {
         id: "chapter-1",
@@ -61,6 +62,7 @@ export const SAMPLE_BOOKS: Book[] = [
     difficulty: "Challenging",
     reading_time: 25,
     description: "Gregor Samsa wakes up one morning to find himself transformed into a giant insect. A deeply symbolic and moving masterpiece on isolation and growth.",
+    ageGroup: "Adults",
     chapters: [
       {
         id: "chapter-1",
@@ -100,6 +102,7 @@ export const SAMPLE_BOOKS: Book[] = [
     difficulty: "Moderate",
     reading_time: 12,
     description: "An elegant, distraction-free introductory guide to the stars, explaining gravity, planetary orbits, and solar phenomena with absolute clarity.",
+    ageGroup: "Teens",
     chapters: [
       {
         id: "chapter-1",
@@ -153,6 +156,7 @@ export const SAMPLE_BOOKS: Book[] = [
     difficulty: "Moderate",
     reading_time: 20,
     description: "A brilliant, witty comedy of manners centered on Elizabeth Bennet and Mr. Darcy as they overcome biased first impressions in 19th-century England.",
+    ageGroup: "Teens",
     chapters: [
       {
         id: "chapter-1",
@@ -192,6 +196,7 @@ export const SAMPLE_BOOKS: Book[] = [
     difficulty: "Easy",
     reading_time: 18,
     description: "Mary Lennox discovers a hidden, locked garden on her uncle's Yorkshire estate and unlocks healing, friendship, and wonders.",
+    ageGroup: "Kids",
     chapters: [
       {
         id: "chapter-1",
@@ -225,6 +230,7 @@ export const SAMPLE_BOOKS: Book[] = [
     difficulty: "Challenging",
     reading_time: 30,
     description: "A brilliant young scientist, Victor Frankenstein, creates an intelligent, towering creature in an unorthodox scientific experiment, with tragic consequences.",
+    ageGroup: "Adults",
     chapters: [
       {
         id: "chapter-1",
@@ -250,6 +256,153 @@ export const SAMPLE_BOOKS: Book[] = [
         role: "The Creation",
         relationships: "Cast out rejected creation of Victor Frankenstein, seeking human contact.",
         events: "Opened a single dull yellow eye, breathed deeply, and terrified its creator on a rainy night."
+      }
+    ],
+    concepts: []
+  },
+  {
+    id: "sherlock-holmes",
+    title: "The Adventures of Sherlock Holmes",
+    author: "Arthur Conan Doyle",
+    coverColor: "from-blue-800 to-indigo-950",
+    coverIcon: "Search",
+    category: "Young Adult Classics",
+    difficulty: "Moderate",
+    reading_time: 22,
+    description: "Super-sleuth Sherlock Holmes and Dr. Watson decode bizarre clues, dark shadows, and complex mind towers in Victorian London.",
+    ageGroup: "Teens",
+    chapters: [
+      {
+        id: "chapter-1",
+        title: "Chapter I: The Red-Headed League",
+        content: [
+          "I had called upon my friend, Mr. Sherlock Holmes, one day in the autumn of last year and found him in deep conversation with a very stout, florid-faced, elderly gentleman with fiery red hair.",
+          "With an apology for my intrusion, I was about to withdraw when Holmes pulled me abruptly into the room and closed the door behind me.",
+          "'You could not possibly have come at a better time, my dear Watson,' he said cordially.",
+          "The stout gentleman half rose from his chair and gave a bob of greeting, with a quick little questioning glance from his small fat-encircled eyes."
+        ]
+      }
+    ],
+    characters: [
+      {
+        name: "Sherlock Holmes",
+        role: "Consulting Detective",
+        relationships: "Close friend and roommate of Dr. John Watson.",
+        events: "Analyzed the red-headed visitor and deduced his previous history from subtle stains and symbols on his sleeve."
+      },
+      {
+        name: "Dr. John Watson",
+        role: "Biographer & Assistant",
+        relationships: "Trusted colleague of Sherlock Holmes.",
+        events: "Observed Holmes's investigative methods with consistent marvel and documented the cases."
+      }
+    ],
+    concepts: []
+  },
+  {
+    id: "peter-pan",
+    title: "Peter Pan",
+    author: "J. M. Barrie",
+    coverColor: "from-green-600 to-teal-900",
+    coverIcon: "Wind",
+    category: "Beginner Classics",
+    difficulty: "Easy",
+    reading_time: 12,
+    description: "Fly away with Peter Pan, Wendy, and Tinker Bell to Neverland, where children never grow up and adventure awaits around every corner.",
+    ageGroup: "Kids",
+    chapters: [
+      {
+        id: "chapter-1",
+        title: "Chapter I: Peter Breaks Through",
+        content: [
+          "All children, except one, grow up. They soon know that they will grow up, and the way Wendy knew was this.",
+          "One day when she was two years old she was playing in a garden, and she plucked another flower and ran with it to her mother. I suppose she must have looked rather delightful, for Mrs. Darling put her hand to her heart and cried, 'Oh, why can't you remain like this forever!'",
+          "This was all that passed between them on the subject, but henceforth Wendy knew that she must grow up. You always know after you are two. Two is the beginning of the end."
+        ]
+      }
+    ],
+    characters: [
+      {
+        name: "Peter Pan",
+        role: "The Boy Who Wouldn't Grow Up",
+        relationships: "Leader of the Lost Boys; friend to Wendy and Tinker Bell.",
+        events: "Flew into the Darling nursery in search of his lost shadow."
+      },
+      {
+        name: "Wendy Darling",
+        role: "Nursery Companion",
+        relationships: "Eldest sister of John and Michael Darling.",
+        events: "Sewed Peter Pan's shadow back onto his feet."
+      }
+    ],
+    concepts: []
+  },
+  {
+    id: "the-time-machine",
+    title: "The Time Machine",
+    author: "H. G. Wells",
+    coverColor: "from-purple-800 to-violet-950",
+    coverIcon: "Hourglass",
+    category: "Personal Growth / Science",
+    difficulty: "Challenging",
+    reading_time: 20,
+    description: "A Victorian inventor builds a vehicle that projects him into the year 802,701, where he discovers two strangely evolved branches of humanity.",
+    ageGroup: "Adults",
+    chapters: [
+      {
+        id: "chapter-1",
+        title: "Chapter I: The Time Traveller's Machine",
+        content: [
+          "The Time Traveller (for so it will be convenient to speak of him) was expounding a recondite matter to us. His grey eyes shone and twinkled, and his usually pale face was flushed and animated.",
+          "The fire burned brightly, and the soft radiance of the incandescent lights in the lilies of silver caught the bubbles that flashed and passed in our glasses.",
+          "'I want you to clearly understand,' he said, 'that any real body must have extension in four directions: it must have Length, Breadth, Thickness, and—Duration.'"
+        ]
+      }
+    ],
+    characters: [
+      {
+        name: "The Time Traveller",
+        role: "Inventor & Explorer",
+        relationships: "Expounder of temporal travel laws to Victorian listeners.",
+        events: "Constructed a complex device of brass and ivory designed to move through time."
+      }
+    ],
+    concepts: []
+  },
+  {
+    id: "the-little-prince",
+    title: "The Little Prince",
+    author: "Antoine de Saint-Exupéry",
+    coverColor: "from-amber-400 to-orange-600",
+    coverIcon: "Sun",
+    category: "Beginner Classics",
+    difficulty: "Easy",
+    reading_time: 10,
+    description: "An aviator stranded in the Sahara meets a small young prince from an asteroid who shares cosmic wisdom on things of true value.",
+    ageGroup: "Kids",
+    chapters: [
+      {
+        id: "chapter-1",
+        title: "Chapter I: The Pilot and the Little Prince",
+        content: [
+          "Once when I was six years old I saw a magnificent picture in a book, called True Stories from Nature, about the primeval forest. It was a picture of a boa constrictor in the act of swallowing an animal.",
+          "I showed my masterpiece to the grown-ups, and asked them whether the drawing frightened them. But they answered: 'Frighten? Why should anyone be frightened by a hat?'",
+          "My drawing was not a picture of a hat. It was a picture of a boa constrictor digesting an elephant. But since the grown-ups were not able to understand it, I made another drawing: I drew the inside of the boa constrictor."
+        ]
+      }
+    ],
+    characters: [
+      {
+        name: "The Little Prince",
+        role: "Celestial Traveler",
+        relationships: "Visitor from Asteroid B-612.",
+        events: "Asked the narrator to draw a sheep, displaying high curiosity."
+      },
+      {
+        name: "The Narrator",
+        role: "Stranded Aviator",
+        relationships: "Friend of the Little Prince in the desert.",
+        events: "Attempted to repair his airplane engine while discussing drawing and roses."
       }
     ],
     concepts: []
@@ -312,7 +465,7 @@ export const WORD_DICTIONARY: Record<string, { definition: string; pronunciation
   },
   metamorphosis: {
     definition: "A biological or physical transformation from an immature form to an adult form, or a major change in appearance and character.",
-    pronunciation: "met-uh-mawr-fuh-sis",
+    pronunciation: "met-uh-mawr-huf-sis",
     simple: "A complete physical change from one form into another, like a caterpillar turning into a butterfly.",
     example: "Gregor Samsa experienced a terrifying metamorphosis overnight."
   },

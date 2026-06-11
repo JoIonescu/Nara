@@ -51,6 +51,7 @@ export default function Dashboard({
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>("All");
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
+  const [selectedAgeGroup, setSelectedAgeGroup] = useState<string>("All");
   const [selectedSort, setSelectedSort] = useState<string>("recommended");
 
   // Selected Book for the Detail View
@@ -129,8 +130,9 @@ export default function Dashboard({
     
     const matchesDifficulty = selectedDifficulty === "All" || book.difficulty === selectedDifficulty;
     const matchesCategory = selectedCategory === "All" || book.category === selectedCategory;
+    const matchesAgeGroup = selectedAgeGroup === "All" || book.ageGroup === selectedAgeGroup;
 
-    return matchesSearch && matchesDifficulty && matchesCategory;
+    return matchesSearch && matchesDifficulty && matchesCategory && matchesAgeGroup;
   }).sort((a, b) => {
     if (selectedSort === "az") {
       return a.title.localeCompare(b.title);
@@ -351,13 +353,13 @@ export default function Dashboard({
                   </span>
                 </div>
 
-                {/* Interactive Search Tool row (Filters by title, author, difficulty, length, categories) */}
-                <div className="bg-white p-4 border border-[#DCD9D0] rounded-2xl grid grid-cols-1 md:grid-cols-5 gap-3 shadow-xs">
+                {/* Interactive Search Tool row (Filters by title, author, difficulty, length, categories, age) */}
+                <div className="bg-white p-4 border border-[#DCD9D0] rounded-2xl grid grid-cols-1 md:grid-cols-6 gap-3 shadow-xs font-sans">
                   <div className="relative">
                     <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
                     <input
                       type="text"
-                      placeholder="Search title, author or genre..."
+                      placeholder="Search title, author..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className="w-full text-xs pl-9 pr-3 py-2.5 bg-[#F7F4EE]/50 border border-[#DCD9D0] rounded-xl focus:outline-none"
@@ -370,7 +372,7 @@ export default function Dashboard({
                       onChange={(e) => setSelectedDifficulty(e.target.value)}
                       className="w-full text-xs py-2 px-3 bg-white border border-[#DCD9D0] rounded-xl focus:outline-none font-bold"
                     >
-                      <option value="All">All Difficulty Scores</option>
+                      <option value="All">All Difficulties</option>
                       <option value="Easy">Easy Level</option>
                       <option value="Moderate">Moderate Level</option>
                       <option value="Challenging">Challenging Level</option>
@@ -383,10 +385,23 @@ export default function Dashboard({
                       onChange={(e) => setSelectedCategory(e.target.value)}
                       className="w-full text-xs py-2 px-3 bg-white border border-[#DCD9D0] rounded-xl focus:outline-none font-bold"
                     >
-                      <option value="All">All Standard Categories</option>
+                      <option value="All">All Categories</option>
                       {categories.filter(c => c !== "All").map((cat) => (
                         <option key={cat} value={cat}>{cat}</option>
                       ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <select
+                      value={selectedAgeGroup}
+                      onChange={(e) => setSelectedAgeGroup(e.target.value)}
+                      className="w-full text-xs py-2 px-3 bg-white border border-[#DCD9D0] rounded-xl focus:outline-none font-bold text-amber-900 border-amber-200"
+                    >
+                      <option value="All">All Age Groups</option>
+                      <option value="Kids">Kids (under 12)</option>
+                      <option value="Teens">Teens (13-17)</option>
+                      <option value="Adults">Adults (18+)</option>
                     </select>
                   </div>
 
@@ -399,14 +414,14 @@ export default function Dashboard({
                       <option value="recommended">Sort: Default Order</option>
                       <option value="az">Sort: Alphabetical (A-Z)</option>
                       <option value="za">Sort: Alphabetical (Z-A)</option>
-                      <option value="length-asc">Sort: Reading Time (Short first)</option>
-                      <option value="length-desc">Sort: Reading Time (Long first)</option>
+                      <option value="length-asc">Sort: Reading Time (Short)</option>
+                      <option value="length-desc">Sort: Reading Time (Long)</option>
                     </select>
                   </div>
 
                   <div className="flex items-center justify-end">
                     <span className="text-xs text-[#666666] font-bold">
-                      Showing {filteredBooks.length} titles
+                      {filteredBooks.length} titles
                     </span>
                   </div>
                 </div>
@@ -453,7 +468,7 @@ export default function Dashboard({
                               <span className="text-[10px] font-black uppercase opacity-75">{book.author}</span>
                               <p className="text-base font-extrabold">{book.title}</p>
                               <div className="flex justify-between items-center text-[9px] font-black bg-white/20 p-1.5 rounded">
-                                <span>{book.difficulty}</span>
+                                <span>{book.difficulty} • {book.ageGroup ? `${book.ageGroup} Group` : "All Ages"}</span>
                                 <span>{book.reading_time}m length</span>
                               </div>
                             </div>
@@ -741,44 +756,63 @@ export default function Dashboard({
                   </div>
 
                   {/* Right Columns: Presets and Onboarding Rerun */}
-                  <div className="lg:col-span-2 bg-white p-8 rounded-3xl border border-[#DCD9D0] space-y-6">
-                    <div className="flex items-center gap-4">
-                      <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#5B8FB9] to-[#E3EFFD] flex items-center justify-center font-black text-white text-xl">
-                        {currentUser?.email ? currentUser.email.substring(0, 2).toUpperCase() : "JD"}
+                  <div className="lg:col-span-2 bg-white p-8 rounded-3xl border border-[#DCD9D0] space-y-6 font-sans">
+                    {currentUser ? (
+                      <>
+                        <div className="flex items-center gap-4">
+                          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#5B8FB9] to-[#E3EFFD] flex items-center justify-center font-black text-white text-xl">
+                            {currentUser.email ? currentUser.email.substring(0, 2).toUpperCase() : "R"}
+                          </div>
+                          <div>
+                            <p className="text-lg font-bold">Nara Active Reader</p>
+                            <p className="text-xs text-emerald-600 font-bold">✓ Synced: {currentUser.email}</p>
+                          </div>
+                        </div>
+
+                        <hr className="border-[#DCD9D0]" />
+
+                        <div>
+                          <h3 className="text-xs font-extrabold uppercase text-[#666666] tracking-widest mb-3">Locked Preferences</h3>
+                          
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="bg-[#F7F4EE] p-4 rounded-xl border border-[#DCD9D0]">
+                              <p className="text-[10px] text-gray-400 font-extrabold uppercase">Typeface Font</p>
+                              <p className={`text-base font-black ${fontClasses[preferences.font] || ""} mt-1`}>{preferences.font}</p>
+                            </div>
+
+                            <div className="bg-[#F7F4EE] p-4 rounded-xl border border-[#DCD9D0]">
+                              <p className="text-[10px] text-gray-400 font-extrabold uppercase">Render Size</p>
+                              <p className="text-base font-black mt-1">{preferences.textSize}px</p>
+                            </div>
+
+                            <div className="bg-[#F7F4EE] p-4 rounded-xl border border-[#DCD9D0]">
+                              <p className="text-[10px] text-gray-400 font-extrabold uppercase">Contrast Theme</p>
+                              <p className="text-base font-black mt-1 capitalize">{preferences.theme}</p>
+                            </div>
+
+                            <div className="bg-[#F7F4EE] p-4 rounded-xl border border-[#DCD9D0]">
+                              <p className="text-[10px] text-gray-400 font-extrabold uppercase">Line Spacing multiplier</p>
+                              <p className="text-base font-black mt-1">{preferences.lineSpacing}x</p>
+                            </div>
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center text-center py-8 space-y-4">
+                        <div className="w-16 h-16 rounded-full bg-amber-50 text-amber-600 border border-amber-200 flex items-center justify-center">
+                          <User className="w-8 h-8" />
+                        </div>
+                        <div>
+                          <p className="text-lg font-bold">No Verified Account</p>
+                          <p className="text-xs text-gray-500 font-bold max-w-xs mx-auto mt-1 leading-normal">
+                            Sign up or sign in using the passwordless email form to see your synced reader account and lock in custom settings permanently.
+                          </p>
+                        </div>
+                        <div className="bg-[#F7F4EE] text-gray-700 text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full border border-[#DCD9D0]">
+                          Reading as Guest
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-lg font-bold">{currentUser?.email ? "Nara Active Reader" : "Julian Dawson"}</p>
-                        <p className="text-xs text-gray-500 font-bold">{currentUser?.email || "ioana.el.ionescu@gmail.com"}</p>
-                      </div>
-                    </div>
-
-                    <hr className="border-[#DCD9D0]" />
-
-                    <div>
-                      <h3 className="text-xs font-extrabold uppercase text-[#666666] tracking-widest mb-3">Locked Preferences</h3>
-                      
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="bg-[#F7F4EE] p-4 rounded-xl border border-[#DCD9D0]">
-                          <p className="text-[10px] text-gray-400 font-extrabold uppercase">Typeface Font</p>
-                          <p className={`text-base font-black ${fontClasses[preferences.font] || ""} mt-1`}>{preferences.font}</p>
-                        </div>
-
-                        <div className="bg-[#F7F4EE] p-4 rounded-xl border border-[#DCD9D0]">
-                          <p className="text-[10px] text-gray-400 font-extrabold uppercase">Render Size</p>
-                          <p className="text-base font-black mt-1">{preferences.textSize}px</p>
-                        </div>
-
-                        <div className="bg-[#F7F4EE] p-4 rounded-xl border border-[#DCD9D0]">
-                          <p className="text-[10px] text-gray-400 font-extrabold uppercase">Contrast Theme</p>
-                          <p className="text-base font-black mt-1 capitalize">{preferences.theme}</p>
-                        </div>
-
-                        <div className="bg-[#F7F4EE] p-4 rounded-xl border border-[#DCD9D0]">
-                          <p className="text-[10px] text-gray-400 font-extrabold uppercase">Line Spacing multiplier</p>
-                          <p className="text-base font-black mt-1">{preferences.lineSpacing}x</p>
-                        </div>
-                      </div>
-                    </div>
+                    )}
 
                     <div className="pt-4 flex flex-col gap-2">
                       <button

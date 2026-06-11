@@ -46,6 +46,7 @@ export interface Book {
   chapters: Chapter[];
   characters: CharacterCard[];
   concepts: ConceptCard[];
+  ageGroup?: "Kids" | "Teens" | "Adults";
 }
 
 export interface ReadingPosition {
