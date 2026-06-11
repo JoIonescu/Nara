@@ -98,7 +98,7 @@ export default function Dashboard({
       setFetchingSubject(true);
       try {
         const querySubject = selectedSubject.toLowerCase().replace(" ", "_");
-        const response = await fetch(`https://openlibrary.org/subjects/${querySubject}.json?limit=12`);
+        const response = await fetch(`/api/proxy/openlibrary/subjects?subject=${querySubject}&limit=12`);
         if (!response.ok) {
           throw new Error("Could not pull subject works from Open Library.");
         }
@@ -169,7 +169,7 @@ export default function Dashboard({
     setSearchingOnline(true);
     setOnlineError(null);
     try {
-      const response = await fetch(`https://openlibrary.org/search.json?q=${encodeURIComponent(term)}&limit=9`);
+      const response = await fetch(`/api/proxy/openlibrary/search?q=${encodeURIComponent(term)}&limit=9`);
       if (!response.ok) {
         throw new Error("Could not pull results from Open Library database.");
       }
@@ -840,11 +840,49 @@ export default function Dashboard({
                           <h3 className="text-xs font-black uppercase text-[#666666] tracking-widest flex items-center gap-2">
                             <span>📚</span> Curated Classic Bookshelf (Offline Ready)
                           </h3>
-                          <span className="text-[10px] font-bold text-gray-400">10 Volumes Installed</span>
+                          <span className="text-[10px] font-bold text-gray-400">
+                            {(() => {
+                              const matches = books.filter(b => {
+                                const sub = selectedSubject.toLowerCase();
+                                if (sub === "classics") return b.category.toLowerCase().includes("classic");
+                                if (sub === "fantasy") return ["alice-wonderland", "peter-pan", "the-little-prince", "the-secret-garden"].includes(b.id);
+                                if (sub === "science_fiction") return ["astronomy-basics", "frankenstein", "the-time-machine"].includes(b.id);
+                                if (sub === "children") return ["alice-wonderland", "peter-pan", "the-little-prince", "the-secret-garden"].includes(b.id);
+                                if (sub === "romance") return ["pride-prejudice"].includes(b.id);
+                                if (sub === "mystery") return ["sherlock-holmes", "frankenstein"].includes(b.id);
+                                return false;
+                              });
+                              return `${matches.length} volumes matches`;
+                            })()}
+                          </span>
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 font-sans">
-                          {books.slice(0, 10).map((book) => renderBookCard(book, false))}
-                        </div>
+                        {(() => {
+                          const localMatches = books.filter(b => {
+                            const sub = selectedSubject.toLowerCase();
+                            if (sub === "classics") return b.category.toLowerCase().includes("classic");
+                            if (sub === "fantasy") return ["alice-wonderland", "peter-pan", "the-little-prince", "the-secret-garden"].includes(b.id);
+                            if (sub === "science_fiction") return ["astronomy-basics", "frankenstein", "the-time-machine"].includes(b.id);
+                            if (sub === "children") return ["alice-wonderland", "peter-pan", "the-little-prince", "the-secret-garden"].includes(b.id);
+                            if (sub === "romance") return ["pride-prejudice"].includes(b.id);
+                            if (sub === "mystery") return ["sherlock-holmes", "frankenstein"].includes(b.id);
+                            return false;
+                          });
+
+                          if (localMatches.length > 0) {
+                            return (
+                              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 font-sans">
+                                {localMatches.map((book) => renderBookCard(book, false))}
+                              </div>
+                            );
+                          } else {
+                            return (
+                              <div className="py-8 px-4 text-center rounded-2xl border border-dashed border-[#DCD9D0] bg-white/40 text-stone-600 text-xs font-semibold space-y-1">
+                                <p>No pre-loaded local Bookshelf volumes in this genre.</p>
+                                <p className="text-[10px] text-gray-500 font-normal">Enjoy free live global titles retrieved from the Open Library stream box below!</p>
+                              </div>
+                            );
+                          }
+                        })()}
                       </div>
 
                       {/* Section 2: Online Genre Stream (Subject books loaded from Open Library APIs) */}

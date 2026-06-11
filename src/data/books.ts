@@ -12,6 +12,7 @@ export const SAMPLE_BOOKS: Book[] = [
     reading_time: 15,
     description: "Follow Alice down the rabbit hole into a whimsical underworld of bizarre logic, talking animals, and mathematical riddles. Perfect for building reading confidence.",
     ageGroup: "Kids",
+    coverUrl: "https://covers.openlibrary.org/b/id/11186835-M.jpg",
     chapters: [
       {
         id: "chapter-1",
@@ -63,6 +64,7 @@ export const SAMPLE_BOOKS: Book[] = [
     reading_time: 25,
     description: "Gregor Samsa wakes up one morning to find himself transformed into a giant insect. A deeply symbolic and moving masterpiece on isolation and growth.",
     ageGroup: "Adults",
+    coverUrl: "https://covers.openlibrary.org/b/id/12833076-M.jpg",
     chapters: [
       {
         id: "chapter-1",
@@ -103,6 +105,7 @@ export const SAMPLE_BOOKS: Book[] = [
     reading_time: 12,
     description: "An elegant, distraction-free introductory guide to the stars, explaining gravity, planetary orbits, and solar phenomena with absolute clarity.",
     ageGroup: "Teens",
+    coverUrl: "https://covers.openlibrary.org/b/id/8308253-M.jpg",
     chapters: [
       {
         id: "chapter-1",
@@ -157,6 +160,7 @@ export const SAMPLE_BOOKS: Book[] = [
     reading_time: 20,
     description: "A brilliant, witty comedy of manners centered on Elizabeth Bennet and Mr. Darcy as they overcome biased first impressions in 19th-century England.",
     ageGroup: "Teens",
+    coverUrl: "https://covers.openlibrary.org/b/id/12693897-M.jpg",
     chapters: [
       {
         id: "chapter-1",
@@ -197,6 +201,7 @@ export const SAMPLE_BOOKS: Book[] = [
     reading_time: 18,
     description: "Mary Lennox discovers a hidden, locked garden on her uncle's Yorkshire estate and unlocks healing, friendship, and wonders.",
     ageGroup: "Kids",
+    coverUrl: "https://covers.openlibrary.org/b/id/10419266-M.jpg",
     chapters: [
       {
         id: "chapter-1",
@@ -231,6 +236,7 @@ export const SAMPLE_BOOKS: Book[] = [
     reading_time: 30,
     description: "A brilliant young scientist, Victor Frankenstein, creates an intelligent, towering creature in an unorthodox scientific experiment, with tragic consequences.",
     ageGroup: "Adults",
+    coverUrl: "https://covers.openlibrary.org/b/id/12818862-M.jpg",
     chapters: [
       {
         id: "chapter-1",
@@ -271,6 +277,7 @@ export const SAMPLE_BOOKS: Book[] = [
     reading_time: 22,
     description: "Super-sleuth Sherlock Holmes and Dr. Watson decode bizarre clues, dark shadows, and complex mind towers in Victorian London.",
     ageGroup: "Teens",
+    coverUrl: "https://covers.openlibrary.org/b/id/12739343-M.jpg",
     chapters: [
       {
         id: "chapter-1",
@@ -310,6 +317,7 @@ export const SAMPLE_BOOKS: Book[] = [
     reading_time: 12,
     description: "Fly away with Peter Pan, Wendy, and Tinker Bell to Neverland, where children never grow up and adventure awaits around every corner.",
     ageGroup: "Kids",
+    coverUrl: "https://covers.openlibrary.org/b/id/10543232-M.jpg",
     chapters: [
       {
         id: "chapter-1",
@@ -348,6 +356,7 @@ export const SAMPLE_BOOKS: Book[] = [
     reading_time: 20,
     description: "A Victorian inventor builds a vehicle that projects him into the year 802,701, where he discovers two strangely evolved branches of humanity.",
     ageGroup: "Adults",
+    coverUrl: "https://covers.openlibrary.org/b/id/10667945-M.jpg",
     chapters: [
       {
         id: "chapter-1",
@@ -380,6 +389,7 @@ export const SAMPLE_BOOKS: Book[] = [
     reading_time: 10,
     description: "An aviator stranded in the Sahara meets a small young prince from an asteroid who shares cosmic wisdom on things of true value.",
     ageGroup: "Kids",
+    coverUrl: "https://covers.openlibrary.org/b/id/12711019-M.jpg",
     chapters: [
       {
         id: "chapter-1",

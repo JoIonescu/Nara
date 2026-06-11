@@ -175,6 +175,56 @@ ${contentSample}`;
     }
   });
 
+  // Proxy: Open Library Subjects proxy to avoid browser-side CORS blocks
+  app.get("/api/proxy/openlibrary/subjects", async (req, res) => {
+    const { subject, limit } = req.query;
+    if (!subject) {
+      return res.status(400).json({ error: "Missing subject parameter" });
+    }
+    try {
+      const url = `https://openlibrary.org/subjects/${encodeURIComponent(subject as string)}.json?limit=${limit || 12}`;
+      const response = await fetch(url, {
+        headers: {
+          "Accept": "application/json",
+          "User-Agent": "NaraAccessibilityApp/1.0 (ioana.el.ionescu@gmail.com)"
+        }
+      });
+      if (!response.ok) {
+        throw new Error(`Open Library returned status ${response.status}`);
+      }
+      const data = await response.json();
+      res.json(data);
+    } catch (err: any) {
+      console.error("Open Library Subjects Proxy Error:", err.message);
+      res.status(500).json({ error: err.message || "Failed to retrieve subject books" });
+    }
+  });
+
+  // Proxy: Open Library Search proxy to avoid browser-side CORS blocks
+  app.get("/api/proxy/openlibrary/search", async (req, res) => {
+    const { q, limit } = req.query;
+    if (!q) {
+      return res.status(400).json({ error: "Missing query space parameter 'q'" });
+    }
+    try {
+      const url = `https://openlibrary.org/search.json?q=${encodeURIComponent(q as string)}&limit=${limit || 9}`;
+      const response = await fetch(url, {
+        headers: {
+          "Accept": "application/json",
+          "User-Agent": "NaraAccessibilityApp/1.0 (ioana.el.ionescu@gmail.com)"
+        }
+      });
+      if (!response.ok) {
+        throw new Error(`Open Library returned status ${response.status}`);
+      }
+      const data = await response.json();
+      res.json(data);
+    } catch (err: any) {
+      console.error("Open Library Search Proxy Error:", err.message);
+      res.status(500).json({ error: err.message || "Failed to query library index" });
+    }
+  });
+
   // AI Route: Generate Accessible Book on-demand
   app.post("/api/ai/generate-book", async (req, res) => {
     const { title, author, category } = req.body;
