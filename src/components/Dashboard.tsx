@@ -1,7 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import NaraLogo from "./NaraLogo";
 import { Book, UserPreferences, Bookmark, ReadingPosition, ReadingStats } from "../types";
 import { SAMPLE_BOOKS, DIFFICULTY_SPECS } from "../data/books";
+import { auth } from "../lib/firebase";
+import { onAuthStateChanged, signOut, sendSignInLinkToEmail, User as FirebaseUser } from "firebase/auth";
 import {
   Compass,
   BookOpen,
@@ -49,9 +51,55 @@ export default function Dashboard({
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>("All");
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
+  const [selectedSort, setSelectedSort] = useState<string>("recommended");
 
   // Selected Book for the Detail View
   const [detailedBookId, setDetailedBookId] = useState<string | null>(null);
+
+  // Authentication states & events
+  const [currentUser, setCurrentUser] = useState<FirebaseUser | null>(null);
+  const [authEmail, setAuthEmail] = useState("");
+  const [magicLinkSent, setMagicLinkSent] = useState(false);
+  const [authError, setAuthError] = useState("");
+  const [authLoading, setAuthLoading] = useState(false);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (usr) => {
+      setCurrentUser(usr);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const handleSendMagicLink = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!authEmail) return;
+    setAuthLoading(true);
+    setAuthError("");
+    setMagicLinkSent(false);
+
+    try {
+      const actionCodeSettings = {
+        url: window.location.href.split("?")[0],
+        handleCodeInApp: true,
+      };
+      await sendSignInLinkToEmail(auth, authEmail, actionCodeSettings);
+      window.localStorage.setItem("emailForSignIn", authEmail);
+      setMagicLinkSent(true);
+    } catch (err: any) {
+      console.error(err);
+      setAuthError(err.message || "An error occurred while dispatching the link.");
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await signOut(auth);
+    } catch (err) {
+      console.error("Sign out error", err);
+    }
+  };
 
   // Core visual theme names mapped
   const themeClasses: Record<string, string> = {
@@ -83,6 +131,20 @@ export default function Dashboard({
     const matchesCategory = selectedCategory === "All" || book.category === selectedCategory;
 
     return matchesSearch && matchesDifficulty && matchesCategory;
+  }).sort((a, b) => {
+    if (selectedSort === "az") {
+      return a.title.localeCompare(b.title);
+    }
+    if (selectedSort === "za") {
+      return b.title.localeCompare(a.title);
+    }
+    if (selectedSort === "length-asc") {
+      return a.reading_time - b.reading_time;
+    }
+    if (selectedSort === "length-desc") {
+      return b.reading_time - a.reading_time;
+    }
+    return 0; // Default Order
   });
 
   const categories = ["All", "Beginner Classics", "Young Adult Classics", "Personal Growth / Science"];
@@ -290,7 +352,7 @@ export default function Dashboard({
                 </div>
 
                 {/* Interactive Search Tool row (Filters by title, author, difficulty, length, categories) */}
-                <div className="bg-white p-4 border border-[#DCD9D0] rounded-2xl grid grid-cols-1 md:grid-cols-4 gap-3 shadow-xs">
+                <div className="bg-white p-4 border border-[#DCD9D0] rounded-2xl grid grid-cols-1 md:grid-cols-5 gap-3 shadow-xs">
                   <div className="relative">
                     <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
                     <input
@@ -325,6 +387,20 @@ export default function Dashboard({
                       {categories.filter(c => c !== "All").map((cat) => (
                         <option key={cat} value={cat}>{cat}</option>
                       ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <select
+                      value={selectedSort}
+                      onChange={(e) => setSelectedSort(e.target.value)}
+                      className="w-full text-xs py-2 px-3 bg-white border border-[#DCD9D0] rounded-xl focus:outline-none font-bold text-gray-700"
+                    >
+                      <option value="recommended">Sort: Default Order</option>
+                      <option value="az">Sort: Alphabetical (A-Z)</option>
+                      <option value="za">Sort: Alphabetical (Z-A)</option>
+                      <option value="length-asc">Sort: Reading Time (Short first)</option>
+                      <option value="length-desc">Sort: Reading Time (Long first)</option>
                     </select>
                   </div>
 
@@ -588,52 +664,130 @@ export default function Dashboard({
                   <p className="text-xs text-[#666666]">View and modify active aesthetics presets chosen during onboarding.</p>
                 </div>
 
-                <div className="bg-white p-8 rounded-3xl border border-[#DCD9D0] space-y-6">
-                  <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#5B8FB9] to-[#E3EFFD] flex items-center justify-center font-black text-white text-xl">
-                      JD
-                    </div>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  {/* Left Column: Accounts / Authentication via Magic Link */}
+                  <div className="lg:col-span-1 bg-white p-6 rounded-3xl border border-[#DCD9D0] flex flex-col justify-between">
                     <div>
-                      <p className="text-lg font-bold">Julian Dawson</p>
-                      <p className="text-xs text-gray-500 font-bold">ioana.el.ionescu@gmail.com</p>
+                      <h3 className="text-xs font-extrabold uppercase text-[#666666] tracking-widest mb-3">Reader Account</h3>
+                      <p className="text-stone-500 text-xs mb-4 leading-relaxed">
+                        Secure your personalized bookmarks, reading stats, and custom settings across all of your browsers password-free.
+                      </p>
+
+                      {currentUser ? (
+                        <div className="space-y-4">
+                          <div className="flex items-center gap-3 bg-[#EEF5FA] p-3 rounded-xl border border-[#D0DFEB]">
+                            <div className="w-10 h-10 rounded-full bg-[#5B8FB9] text-white flex items-center justify-center font-black text-sm shrink-0">
+                              {currentUser.email ? currentUser.email.substring(0, 2).toUpperCase() : "R"}
+                            </div>
+                            <div className="overflow-hidden">
+                              <p className="text-[9px] text-[#5B8FB9] font-extrabold uppercase tracking-wider">Logged In</p>
+                              <p className="text-xs font-bold text-[#1B2A4A] truncate">{currentUser.email}</p>
+                            </div>
+                          </div>
+
+                          <button
+                            onClick={handleSignOut}
+                            className="w-full py-2.5 bg-rose-50 text-rose-700 hover:bg-rose-100 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all cursor-pointer border border-rose-200"
+                          >
+                            Sign Out Account
+                          </button>
+                        </div>
+                      ) : (
+                        <form onSubmit={handleSendMagicLink} className="space-y-3">
+                          <div>
+                            <label className="text-[10px] font-extrabold uppercase text-[#777777] block mb-1">
+                              Your Email Address
+                            </label>
+                            <input
+                              type="email"
+                              required
+                              placeholder="you@domain.com"
+                              value={authEmail}
+                              onChange={(e) => setAuthEmail(e.target.value)}
+                              className="w-full text-xs p-3 bg-[#F7F4EE]/50 border border-[#DCD9D0] rounded-xl focus:outline-none focus:border-[#5B8FB9]"
+                            />
+                          </div>
+
+                          {authError && (
+                            <p className="text-[10px] text-red-600 font-bold bg-red-50 p-2 rounded-lg border border-red-100 leading-normal">
+                              {authError}
+                            </p>
+                          )}
+
+                          {magicLinkSent && (
+                            <p className="text-[10px] text-emerald-700 font-bold bg-emerald-50 p-2 rounded-lg border border-emerald-100 leading-normal">
+                              ✓ Check your inbox! We dispatched your Nara magic link.
+                            </p>
+                          )}
+
+                          <button
+                            type="submit"
+                            disabled={authLoading}
+                            className={`w-full py-2.5 bg-[#5B8FB9] hover:bg-[#4C7C9E] text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${
+                              authLoading ? "opacity-60 cursor-not-allowed" : ""
+                            }`}
+                          >
+                            {authLoading ? "Dispatching..." : "Send Magic Sign Up Link"}
+                          </button>
+                        </form>
+                      )}
+                    </div>
+
+                    <div className="mt-6 pt-4 border-t border-[#DCD9D0]/50 flex items-center justify-between">
+                      <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">
+                        Firestore Sync Active
+                      </span>
                     </div>
                   </div>
 
-                  <hr className="border-[#DCD9D0]" />
-
-                  <div>
-                    <h3 className="text-xs font-extrabold uppercase text-[#666666] tracking-widest mb-3">Locked Preferences</h3>
-                    
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      <div className="bg-[#F7F4EE] p-4 rounded-xl border border-[#DCD9D0]">
-                        <p className="text-[10px] text-gray-400 font-extrabold uppercase">Typeface Font</p>
-                        <p className={`text-base font-black ${fontClasses[preferences.font]} mt-1`}>{preferences.font}</p>
+                  {/* Right Columns: Presets and Onboarding Rerun */}
+                  <div className="lg:col-span-2 bg-white p-8 rounded-3xl border border-[#DCD9D0] space-y-6">
+                    <div className="flex items-center gap-4">
+                      <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#5B8FB9] to-[#E3EFFD] flex items-center justify-center font-black text-white text-xl">
+                        {currentUser?.email ? currentUser.email.substring(0, 2).toUpperCase() : "JD"}
                       </div>
-
-                      <div className="bg-[#F7F4EE] p-4 rounded-xl border border-[#DCD9D0]">
-                        <p className="text-[10px] text-gray-400 font-extrabold uppercase">Render Size</p>
-                        <p className="text-base font-black mt-1">{preferences.textSize}px</p>
-                      </div>
-
-                      <div className="bg-[#F7F4EE] p-4 rounded-xl border border-[#DCD9D0]">
-                        <p className="text-[10px] text-gray-400 font-extrabold uppercase">Contrast Theme</p>
-                        <p className="text-base font-black mt-1 capitalize">{preferences.theme}</p>
-                      </div>
-
-                      <div className="bg-[#F7F4EE] p-4 rounded-xl border border-[#DCD9D0]">
-                        <p className="text-[10px] text-gray-400 font-extrabold uppercase">Line Spacing multiplier</p>
-                        <p className="text-base font-black mt-1">{preferences.lineSpacing}x</p>
+                      <div>
+                        <p className="text-lg font-bold">{currentUser?.email ? "Nara Active Reader" : "Julian Dawson"}</p>
+                        <p className="text-xs text-gray-500 font-bold">{currentUser?.email || "ioana.el.ionescu@gmail.com"}</p>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="pt-4 flex flex-col gap-2">
-                    <button
-                      onClick={onRestartOnboarding}
-                      className="w-full py-3 border-2 border-[#5B8FB9] text-[#5B8FB9] hover:bg-[#5B8FB9] hover:text-white rounded-xl text-xs font-black uppercase tracking-wider transition-colors cursor-pointer"
-                    >
-                      Re-run Interactive Onboarding Setup
-                    </button>
+                    <hr className="border-[#DCD9D0]" />
+
+                    <div>
+                      <h3 className="text-xs font-extrabold uppercase text-[#666666] tracking-widest mb-3">Locked Preferences</h3>
+                      
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="bg-[#F7F4EE] p-4 rounded-xl border border-[#DCD9D0]">
+                          <p className="text-[10px] text-gray-400 font-extrabold uppercase">Typeface Font</p>
+                          <p className={`text-base font-black ${fontClasses[preferences.font] || ""} mt-1`}>{preferences.font}</p>
+                        </div>
+
+                        <div className="bg-[#F7F4EE] p-4 rounded-xl border border-[#DCD9D0]">
+                          <p className="text-[10px] text-gray-400 font-extrabold uppercase">Render Size</p>
+                          <p className="text-base font-black mt-1">{preferences.textSize}px</p>
+                        </div>
+
+                        <div className="bg-[#F7F4EE] p-4 rounded-xl border border-[#DCD9D0]">
+                          <p className="text-[10px] text-gray-400 font-extrabold uppercase">Contrast Theme</p>
+                          <p className="text-base font-black mt-1 capitalize">{preferences.theme}</p>
+                        </div>
+
+                        <div className="bg-[#F7F4EE] p-4 rounded-xl border border-[#DCD9D0]">
+                          <p className="text-[10px] text-gray-400 font-extrabold uppercase">Line Spacing multiplier</p>
+                          <p className="text-base font-black mt-1">{preferences.lineSpacing}x</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="pt-4 flex flex-col gap-2">
+                      <button
+                        onClick={onRestartOnboarding}
+                        className="w-full py-3 border-2 border-[#5B8FB9] text-[#5B8FB9] hover:bg-[#5B8FB9] hover:text-white rounded-xl text-xs font-black uppercase tracking-wider transition-colors cursor-pointer"
+                      >
+                        Re-run Interactive Onboarding Setup
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>

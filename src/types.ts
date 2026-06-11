@@ -10,6 +10,7 @@ export interface UserPreferences {
   theme: ThemeOption;
   support: SupportMode;
   reduceMotion: boolean;
+  narratorVoice?: string;
 }
 
 export interface CharacterCard {

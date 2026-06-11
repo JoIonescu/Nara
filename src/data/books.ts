@@ -142,6 +142,117 @@ export const SAMPLE_BOOKS: Book[] = [
         examples: ["Earth traveling in its 365-day loop around the Sun.", "The International Space Station traveling around Earth."]
       }
     ]
+  },
+  {
+    id: "pride-prejudice",
+    title: "Pride and Prejudice",
+    author: "Jane Austen",
+    coverColor: "from-teal-600 to-emerald-800",
+    coverIcon: "Heart",
+    category: "Beginner Classics",
+    difficulty: "Moderate",
+    reading_time: 20,
+    description: "A brilliant, witty comedy of manners centered on Elizabeth Bennet and Mr. Darcy as they overcome biased first impressions in 19th-century England.",
+    chapters: [
+      {
+        id: "chapter-1",
+        title: "Chapter I: A Truth Universally Acknowledged",
+        content: [
+          "It is a truth universally acknowledged, that a single man in possession of a good fortune, must be in want of a wife.",
+          "However little known the feelings or views of such a man may be on his first entering a neighbourhood, this truth is so well fixed in the minds of the surrounding families, that he is considered as the rightful property of some one or other of their daughters.",
+          "'My dear Mr. Bennet,' said his lady to him one day, 'have you heard that Netherfield Park is let at last?'",
+          "Mr. Bennet replied that he had not.",
+          "'But it is,' returned she; 'for Mrs. Long has just been here, and she told me all about it.' Mr. Bennet made no answer."
+        ]
+      }
+    ],
+    characters: [
+      {
+        name: "Elizabeth Bennet",
+        role: "Main Protagonist",
+        relationships: "Second Bennet daughter. Highly observant and independent.",
+        events: "Encountered the proud Mr. Darcy and initially formed a strong dislike towards him."
+      },
+      {
+        name: "Mr. Darcy",
+        role: "Noble Suitor",
+        relationships: "Wealthy estate owner; friend of Mr. Bingley.",
+        events: "Declined to dance with Elizabeth Bennet at the ball, earning her prolonged resentment."
+      }
+    ],
+    concepts: []
+  },
+  {
+    id: "the-secret-garden",
+    title: "The Secret Garden",
+    author: "Frances Hodgson Burnett",
+    coverColor: "from-green-500 to-amber-700",
+    coverIcon: "Sprout",
+    category: "Young Adult Classics",
+    difficulty: "Easy",
+    reading_time: 18,
+    description: "Mary Lennox discovers a hidden, locked garden on her uncle's Yorkshire estate and unlocks healing, friendship, and wonders.",
+    chapters: [
+      {
+        id: "chapter-1",
+        title: "Chapter I: There Is No One Left",
+        content: [
+          "When Mary Lennox was sent to Misselthwaite Manor to live with her uncle everybody said she was the most disagreeable-looking child ever seen.",
+          "It was true, too. She had a little thin face and a little thin body, thin light hair and a sour expression.",
+          "Her hair was yellow, and her face was yellow because she had been born in India and had always been ill in one way or another.",
+          "Her father had held a position under the English Government and had always been busy and ill himself, and her mother had been a great beauty who cared only to go to parties.",
+          "So, when she was born, she was handed over to an Ayah, who was made to understand that if she wished to please the Mem Sahib she must keep the child out of sight as much as possible."
+        ]
+      }
+    ],
+    characters: [
+      {
+        name: "Mary Lennox",
+        role: "Protagonist",
+        relationships: "Orphaned niece of Archibald Craven, initially sour and lonely.",
+        events: "Survived an epidemic in India and was transported to the vast, windswept Yorkshire moors."
+      }
+    ],
+    concepts: []
+  },
+  {
+    id: "frankenstein",
+    title: "Frankenstein",
+    author: "Mary Shelley",
+    coverColor: "from-neutral-700 to-slate-900",
+    coverIcon: "Flame",
+    category: "Personal Growth / Science",
+    difficulty: "Challenging",
+    reading_time: 30,
+    description: "A brilliant young scientist, Victor Frankenstein, creates an intelligent, towering creature in an unorthodox scientific experiment, with tragic consequences.",
+    chapters: [
+      {
+        id: "chapter-1",
+        title: "Chapter I: The Spark of Life",
+        content: [
+          "It was on a dreary night of November that I beheld the accomplishment of my toils.",
+          "With an anxiety that almost amounted to agony, I collected the instruments of life around me, that I might infuse a spark of being into the lifeless thing that lay at my feet.",
+          "It was already one in the morning; the rain pattered dismally against the panes, and my candle was nearly burnt out, when, by the glimmer of the half-extinguished light, I saw the dull yellow eye of the creature open.",
+          "It breathed hard, and a convulsive motion agitated its limbs.",
+          "How can I describe my emotions at this catastrophe, or how delineate the wretch whom with such infinite pains and care I had endeavoured to form?"
+        ]
+      }
+    ],
+    characters: [
+      {
+        name: "Victor Frankenstein",
+        role: "Obsessive Creator",
+        relationships: "Scientist fascinated by natural philosophy and life's secrets.",
+        events: "Spent months gathering biological components to bring a custom-made giant creature to life."
+      },
+      {
+        name: "The Creature",
+        role: "The Creation",
+        relationships: "Cast out rejected creation of Victor Frankenstein, seeking human contact.",
+        events: "Opened a single dull yellow eye, breathed deeply, and terrified its creator on a rainy night."
+      }
+    ],
+    concepts: []
   }
 ];
 

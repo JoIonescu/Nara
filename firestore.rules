@@ -1,0 +1,120 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global Catch-all Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions for common, reusable parameters
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // User Profile schema validation helper
+    function isValidUserProfile(data) {
+      return data.keys().size() >= 8 && data.keys().size() <= 9
+        && data.uid is string && data.uid.size() <= 128
+        && data.email is string && data.email.size() <= 256
+        && data.font in ['Lexend', 'OpenDyslexic', 'Atkinson', 'Inter']
+        && data.textSize is int && data.textSize >= 8 && data.textSize <= 72
+        && (data.lineSpacing is int || data.lineSpacing is float)
+        && data.lineSpacing >= 1.0 && data.lineSpacing <= 3.0
+        && data.theme in ['cream', 'yellow', 'blue', 'sepia', 'dark', 'light']
+        && data.support in ['read-only', 'read-audio', 'audio-first']
+        && data.reduceMotion is bool
+        && (!('narratorVoice' in data) || (data.narratorVoice is string && data.narratorVoice.size() <= 128));
+    }
+
+    // Bookmarks validation helper
+    function isValidBookmark(data) {
+      return data.keys().size() >= 7 && data.keys().size() <= 8
+        && data.id is string && data.id.size() <= 128
+        && data.userId is string && data.userId.size() <= 128
+        && data.bookId is string && data.bookId.size() <= 128
+        && data.chapterId is string && data.chapterId.size() <= 128
+        && data.paragraphIndex is int && data.paragraphIndex >= 0
+        && data.textSnippet is string && data.textSnippet.size() <= 5000
+        && data.timestamp is int
+        && (!('note' in data) || (data.note is string && data.note.size() <= 2000));
+    }
+
+    // Reading Position validation helper
+    function isValidReadingPosition(data) {
+      return data.keys().size() >= 4 && data.keys().size() <= 5
+        && data.userId is string && data.userId.size() <= 128
+        && data.bookId is string && data.bookId.size() <= 128
+        && data.chapterId is string && data.chapterId.size() <= 128
+        && data.paragraphIndex is int && data.paragraphIndex >= 0
+        && (!('updatedAt' in data) || data.updatedAt is string || data.updatedAt is timestamp);
+    }
+
+    // Reading Stats validation helper
+    function isValidReadingStats(data) {
+      return data.keys().size() >= 6 && data.keys().size() <= 7
+        && data.userId is string && data.userId.size() <= 128
+        && data.booksCompleted is int && data.booksCompleted >= 0
+        && data.readingStreak is int && data.readingStreak >= 0 && data.readingStreak <= 3650
+        && data.minutesRead is int && data.minutesRead >= 0 && data.minutesRead <= 1440
+        && data.wordsRead is int && data.wordsRead >= 0
+        && data.dailyGoalMinutes is int && data.dailyGoalMinutes >= 1 && data.dailyGoalMinutes <= 180
+        && (!('lastReadDate' in data) || (data.lastReadDate is string && data.lastReadDate.size() <= 100));
+    }
+
+    // Collection: Users
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidUserProfile(incoming()) && incoming().uid == request.auth.uid;
+      allow update: if isOwner(userId) && isValidUserProfile(incoming()) && incoming().uid == existing().uid
+                    && incoming().email == existing().email; // email and uid are immortal
+      allow delete: if isOwner(userId);
+
+      // Subcollection: Bookmarks
+      match /bookmarks/{bookmarkId} {
+        allow get: if isOwner(userId) && isValidId(bookmarkId);
+        allow list: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(bookmarkId) && isValidBookmark(incoming()) && incoming().userId == request.auth.uid;
+        allow update: if isOwner(userId) && isValidId(bookmarkId) && isValidBookmark(incoming()) && incoming().userId == existing().userId
+                      && incoming().userId == request.auth.uid;
+        allow delete: if isOwner(userId) && isValidId(bookmarkId);
+      }
+
+      // Subcollection: Positions
+      match /positions/{bookId} {
+        allow get: if isOwner(userId) && isValidId(bookId);
+        allow list: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(bookId) && isValidReadingPosition(incoming()) && incoming().userId == request.auth.uid;
+        allow update: if isOwner(userId) && isValidId(bookId) && isValidReadingPosition(incoming()) && incoming().userId == existing().userId
+                      && incoming().userId == request.auth.uid;
+        allow delete: if isOwner(userId) && isValidId(bookId);
+      }
+
+      // Subcollection: Stats
+      match /stats/{statId} {
+        allow get: if isOwner(userId) && isValidId(statId);
+        allow list: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(statId) && isValidReadingStats(incoming()) && incoming().userId == request.auth.uid;
+        allow update: if isOwner(userId) && isValidId(statId) && isValidReadingStats(incoming()) && incoming().userId == existing().userId
+                      && incoming().userId == request.auth.uid;
+        allow delete: if isOwner(userId) && isValidId(statId);
+      }
+    }
+  }
+}

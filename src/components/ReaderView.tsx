@@ -69,6 +69,22 @@ export default function ReaderView({
   const [highlightedSentenceIndex, setHighlightedSentenceIndex] = useState<number>(0);
   const audioIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Real dynamic Speech Synthesis voice list
+  const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.speechSynthesis) {
+      const getSpeechVoices = () => {
+        const vList = window.speechSynthesis.getVoices();
+        setAvailableVoices(vList);
+      };
+      getSpeechVoices();
+      if (window.speechSynthesis.onvoiceschanged !== undefined) {
+        window.speechSynthesis.onvoiceschanged = getSpeechVoices;
+      }
+    }
+  }, []);
+
   // AI premium assistance overlays
   const [aiSimplifyOverlay, setAiSimplifyOverlay] = useState<{ paragraphIndex: number; simplifiedText: string } | null>(null);
   const [aiSimplifyLoading, setAiSimplifyLoading] = useState<boolean>(false);
@@ -193,9 +209,10 @@ export default function ReaderView({
         const utterance = new SpeechSynthesisUtterance(activeText);
         utterance.rate = audioSpeed;
 
-        // Auto select a beautiful human-like or default English speaking voice
+        // Auto select preferred user-selected voice, or a beautiful English custom voice
         const voices = window.speechSynthesis.getVoices();
         const preferredVoice = 
+          (preferences.narratorVoice ? voices.find(v => v.name === preferences.narratorVoice) : null) ||
           voices.find(v => v.lang.startsWith("en") && (v.name.includes("Google") || v.name.includes("Natural"))) ||
           voices.find(v => v.lang.startsWith("en")) ||
           voices[0];
@@ -670,6 +687,25 @@ export default function ReaderView({
                     <option value="2.0">2.0x ADHD Tempo</option>
                   </select>
                 </div>
+              </div>
+
+              {/* Dynamic Voice Select */}
+              <div className="mt-3 pt-3 border-t border-[#DCD9D0]/50">
+                <span className="text-[9px] font-bold uppercase text-[#888888] flex items-center gap-1 mb-1">
+                  <User className="w-3.5 h-3.5 text-[#5B8FB9]" /> Choose Narrator Voice
+                </span>
+                <select
+                  value={preferences.narratorVoice || ""}
+                  onChange={(e) => onUpdatePreferences({ ...preferences, narratorVoice: e.target.value })}
+                  className="w-full text-xs bg-[#F7F4EE] border border-[#DCD9D0] p-1.5 rounded-lg font-bold text-stone-700 truncate"
+                >
+                  <option value="">Default Human Reader</option>
+                  {availableVoices.map((voice, idx) => (
+                    <option key={idx} value={voice.name}>
+                      {voice.name} ({voice.lang})
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
           </div>

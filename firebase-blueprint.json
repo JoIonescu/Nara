@@ -1,0 +1,83 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Customizable reading preferences and credentials representing a subscription or regular user profile.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "The unique authenticated identifier matching Firebase Auth." },
+        "email": { "type": "string", "format": "email", "description": "User email address." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Profile registration date." },
+        "font": { "type": "string", "enum": ["Lexend", "OpenDyslexic", "Atkinson", "Inter"] },
+        "textSize": { "type": "integer" },
+        "lineSpacing": { "type": "number" },
+        "theme": { "type": "string", "enum": ["cream", "yellow", "blue", "sepia", "dark"] },
+        "support": { "type": "string", "enum": ["read-only", "read-audio", "audio-first"] },
+        "reduceMotion": { "type": "boolean" }
+      },
+      "required": ["uid", "email", "font", "textSize", "lineSpacing", "theme", "support", "reduceMotion"]
+    },
+    "Bookmark": {
+      "title": "Bookmark",
+      "description": "An individual bookmark saved inside a book by a specific user.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "bookId": { "type": "string" },
+        "chapterId": { "type": "string" },
+        "paragraphIndex": { "type": "integer" },
+        "textSnippet": { "type": "string" },
+        "note": { "type": "string" },
+        "timestamp": { "type": "number" }
+      },
+      "required": ["id", "userId", "bookId", "chapterId", "paragraphIndex", "textSnippet", "timestamp"]
+    },
+    "ReadingPosition": {
+      "title": "ReadingPosition",
+      "description": "Keeps track of where a user has left off in a specific book.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "bookId": { "type": "string" },
+        "chapterId": { "type": "string" },
+        "paragraphIndex": { "type": "integer" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "bookId", "chapterId", "paragraphIndex"]
+    },
+    "ReadingStats": {
+      "title": "ReadingStats",
+      "description": "Historical routine aggregates for a reader's streak, minutes, and words.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "booksCompleted": { "type": "integer" },
+        "readingStreak": { "type": "integer" },
+        "minutesRead": { "type": "integer" },
+        "wordsRead": { "type": "integer" },
+        "dailyGoalMinutes": { "type": "integer" },
+        "lastReadDate": { "type": "string" }
+      },
+      "required": ["userId", "booksCompleted", "readingStreak", "minutesRead", "wordsRead", "dailyGoalMinutes"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User profile metadata document."
+    },
+    "/users/{userId}/bookmarks/{bookmarkId}": {
+      "schema": "Bookmark",
+      "description": "Interactive bookmarks stored per user."
+    },
+    "/users/{userId}/positions/{bookId}": {
+      "schema": "ReadingPosition",
+      "description": "Individual book tracking parameters."
+    },
+    "/users/{userId}/stats/reading": {
+      "schema": "ReadingStats",
+      "description": "Aggregation counters measuring user engagement and milestones achievements."
+    }
+  }
+}
