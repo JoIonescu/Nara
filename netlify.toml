@@ -1,0 +1,21 @@
+# Netlify configuration file for the Accessible Reader Platform
+
+[build]
+  # Commands to compile the application assets
+  command = "npm run build"
+  # Folder where Compiled files are published
+  publish = "dist"
+
+# Ensure all client-side URL routes redirect back to the main index.html for React SPA
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+  force = false
+
+[headers]
+  # Basic security & caching rules for static assets
+  [[headers.values]]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "no-referrer"

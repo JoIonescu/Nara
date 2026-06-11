@@ -1,0 +1,54 @@
+@import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&family=Inter:wght@400;500;600;700&family=Lexend:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://cdn.jsdelivr.net/npm/opendyslexic@1.0.3/opendyslexic.css');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-lexend: "Lexend", sans-serif;
+  --font-dyslexic: "OpenDyslexic", sans-serif;
+  --font-atkinson: "Atkinson Hyperlegible", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+}
+
+/* Custom Accessibility & Dyslexia helpers */
+.font-lexend {
+  font-family: 'Lexend', sans-serif;
+}
+
+.font-dyslexic {
+  font-family: 'OpenDyslexic', sans-serif;
+}
+
+.font-atkinson {
+  font-family: 'Atkinson Hyperlegible', sans-serif;
+}
+
+.font-inter {
+  font-family: 'Inter', sans-serif;
+}
+
+/* Accessibility Focus Indicator */
+*:focus-visible {
+  outline: 3px solid #6366f1 !important;
+  outline-offset: 2px !important;
+}
+
+/* Keyboard navigable styles */
+.keyboard-navigable {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Draggable ruler helper */
+.reading-ruler-line {
+  pointer-events: none;
+  mix-blend-mode: color-burn;
+}
+
+/* Hide scrollbars for focus modes if needed */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
