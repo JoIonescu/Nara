@@ -1,10 +1,10 @@
 {
-  "projectId": "ancient-archery-jk8sk",
-  "appId": "1:185578070715:web:1696f027f88991c9807f9e",
+  "projectId": "nara-beaad",
+  "appId": "1:543789980722:web:dc36d3fc303a1b0588702b",
   "apiKey": "PLACEHOLDER_SEE_ENV",
-  "authDomain": "ancient-archery-jk8sk.firebaseapp.com",
-  "firestoreDatabaseId": "ai-studio-5ea6f874-2a24-4864-a069-5d5b3c3ee723",
-  "storageBucket": "ancient-archery-jk8sk.firebasestorage.app",
-  "messagingSenderId": "185578070715",
-  "measurementId": ""
+  "authDomain": "nara-beaad.firebaseapp.com",
+  "firestoreDatabaseId": "(default)",
+  "storageBucket": "nara-beaad.firebasestorage.app",
+  "messagingSenderId": "543789980722",
+  "measurementId": "G-5YYNM3Q0KV"
 }
