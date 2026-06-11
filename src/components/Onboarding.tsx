@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import NaraLogo from "./NaraLogo";
+import InteractiveTutorialVideo from "./InteractiveTutorialVideo";
 import { FontOption, ThemeOption, SupportMode, UserPreferences } from "../types";
 import { Sparkles, Sliders, ChevronRight, Check } from "lucide-react";
 
@@ -51,27 +53,32 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
         {/* Left Interactive Configuration Screen */}
         <div id="config-col" className="md:col-span-7 bg-white/90 backdrop-blur-sm p-8 rounded-2xl border border-[#DCD9D0] shadow-md flex flex-col min-h-[480px] justify-between">
           <div>
-            <div className="flex items-center gap-2 mb-6 text-[#5B8FB9]">
-              <div className="w-8 h-8 rounded-lg bg-[#5B8FB9] text-white flex items-center justify-center font-bold">
-                A
-              </div>
-              <span className="text-xs uppercase font-extrabold tracking-widest">Accessible Set-Up</span>
+            <div className="flex items-center justify-between mb-6 border-b border-[#DCD9D0]/50 pb-4">
+              <NaraLogo showText={true} size="sm" />
+              <div className="text-xs font-bold text-gray-400">Step {step} of 7</div>
             </div>
 
-            {/* Step 1: Welcome Screen */}
+            {/* Step 1: Welcome Screen (with Built-in Interactive Tutorial Tour) */}
             {step === 1 && (
               <div className="space-y-4 animate-fadeIn">
                 <h1 className="text-3xl font-extrabold tracking-tight text-[#222222]">
                   Reading should adapt <span className="text-[#5B8FB9]">to you</span>.
                 </h1>
-                <p className="text-[#666666] leading-relaxed text-base">
-                  Traditional interfaces feel exhausting for public domain reading. We've custom-designed this workspace to optimize for your cognitive speed, eye fatigue, and focus confidence.
+                
+                <p className="text-[#444444] text-xs leading-relaxed">
+                  Traditional interfaces can feel exhausting. Nara adapts to your eye comfort, cognitive pacing, and focus confidence. Watch our brief video tutorial tour below:
                 </p>
-                <div className="mt-6 p-4 bg-[#F7F4EE] rounded-xl border border-[#DCD9D0] text-sm text-[#444444] flex items-start gap-3">
-                  <Sparkles className="w-5 h-5 text-[#5B8FB9] flex-shrink-0 mt-0.5" />
+
+                {/* PREMIUM ACCESSIBLE INTERACTIVE TOUR VIDEO */}
+                <div className="my-2">
+                  <InteractiveTutorialVideo />
+                </div>
+
+                <div className="p-3 bg-[#F7F4EE] rounded-xl border border-[#DCD9D0] text-[11px] text-[#444444] flex items-start gap-2">
+                  <Sparkles className="w-4 h-4 text-[#5B8FB9] flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className="font-bold">Dyslexia, ADHD & Visual Stress Optimized</p>
-                    <p className="text-xs text-[#666666]">Customize line weight, high-legibility fonts, and sensory screen guides inside.</p>
+                    <p className="font-bold">Next Setup Steps:</p>
+                    <p className="text-[#666666]">We will help customize your favorite fonts, sizing bounds, contrast palettes, and active helpers.</p>
                   </div>
                 </div>
               </div>

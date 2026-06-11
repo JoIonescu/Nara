@@ -1,5 +1,5 @@
 {
-  "name": "Accessible Reader",
+  "name": "Nara",
   "description": "An accessible reading platform for dyslexic, ADHD, and visual-stress readers with customizable themes, specialized fonts, focus guides, synchronized audio, and AI assistive tools.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]

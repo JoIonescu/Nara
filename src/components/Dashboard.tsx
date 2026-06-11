@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import NaraLogo from "./NaraLogo";
 import { Book, UserPreferences, Bookmark, ReadingPosition, ReadingStats } from "../types";
 import { SAMPLE_BOOKS, DIFFICULTY_SPECS } from "../data/books";
 import {
@@ -98,12 +99,7 @@ export default function Dashboard({
       
       {/* HEADER: Geometric navigation toolbar */}
       <nav className="h-16 border-b border-[#DCD9D0] px-8 flex items-center justify-between bg-white/50 backdrop-blur-sm shadow-xs sticky top-0 z-40">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-[#5B8FB9] rounded-md flex items-center justify-center">
-            <div className="w-4 h-4 bg-white rounded-sm"></div>
-          </div>
-          <span className="text-xl font-bold tracking-tight uppercase">Lumina</span>
-        </div>
+        <NaraLogo showText={true} />
         
         {/* Navigation tabs */}
         <div className="hidden md:flex gap-8">
@@ -283,7 +279,7 @@ export default function Dashboard({
                 {/* Hero Header Greeting with date */}
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                   <div>
-                    <h1 className="text-3xl font-extrabold tracking-tight">Welcome to Lumina</h1>
+                    <h1 className="text-3xl font-extrabold tracking-tight">Welcome to Nara</h1>
                     <p className="text-xs text-[#666666] mt-1 font-bold">
                       Reading should bring achievement, not exhaustion. Select books below to begin with active support.
                     </p>

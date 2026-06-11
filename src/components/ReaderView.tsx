@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import NaraLogo from "./NaraLogo";
 import { Book, UserPreferences, Bookmark, ReadingPosition, FocusModeType, CharacterCard, ConceptCard, ThemeOption } from "../types";
 import { SAMPLE_BOOKS, DIFFICULTY_SPECS, WORD_DICTIONARY } from "../data/books";
 import {
@@ -166,46 +167,96 @@ export default function ReaderView({
     setActiveSideDrawer("dictionary");
   };
 
-  // Read Along simulation using interval. Slowly shifts highlight index to mimic voice progression
+  // Real interactive browser-native Speech Synthesis (Read Aloud) with live sentence tracking
   useEffect(() => {
+    // Graceful check for server-side render or non-supported browser contexts
+    if (typeof window === "undefined" || !window.speechSynthesis) {
+      return;
+    }
+
     if (isPlayingAudio) {
-      // Set highlight auto-changer based on the speed multiplier
-      const pulseDelay = Math.max(1200 / audioSpeed, 400);
-      
       const pText = activeChapter.content[activeParagraphIndex] || "";
-      // Match sentences roughly
+      // Splitting paragraph into sentences
       const sentences = pText.match(/[^.!?]+[.!?]+(\s|$)/g) || [pText];
 
-      audioIntervalRef.current = setInterval(() => {
-        setHighlightedSentenceIndex((prev) => {
-          if (prev < sentences.length - 1) {
-            return prev + 1;
+      if (highlightedSentenceIndex >= sentences.length) {
+        setHighlightedSentenceIndex(0);
+        return;
+      }
+
+      const activeText = sentences[highlightedSentenceIndex].trim();
+
+      if (activeText) {
+        // Immediate cancel prior spoken queue to avoid cumulative latency
+        window.speechSynthesis.cancel();
+
+        const utterance = new SpeechSynthesisUtterance(activeText);
+        utterance.rate = audioSpeed;
+
+        // Auto select a beautiful human-like or default English speaking voice
+        const voices = window.speechSynthesis.getVoices();
+        const preferredVoice = 
+          voices.find(v => v.lang.startsWith("en") && (v.name.includes("Google") || v.name.includes("Natural"))) ||
+          voices.find(v => v.lang.startsWith("en")) ||
+          voices[0];
+
+        if (preferredVoice) {
+          utterance.voice = preferredVoice;
+        }
+
+        // Set callbacks for synchronization
+        utterance.onend = () => {
+          if (highlightedSentenceIndex < sentences.length - 1) {
+            setHighlightedSentenceIndex((prev) => prev + 1);
           } else {
-            // Move block automatically down to next paragraph if exists
+            // End of active paragraph block. Advance position in document context
             if (activeParagraphIndex < activeChapter.content.length - 1) {
               onUpdatePosition({
                 ...currentPosition,
                 paragraphIndex: activeParagraphIndex + 1,
               });
-              return 0;
+              setHighlightedSentenceIndex(0);
             } else {
-              // End of chapter
+              // Reached final sentence of active chapter! Pause audio controls safely
               setIsPlayingAudio(false);
-              return 0;
+              setHighlightedSentenceIndex(0);
             }
           }
-        });
-      }, pulseDelay);
-    } else {
-      if (audioIntervalRef.current) {
-        clearInterval(audioIntervalRef.current);
+        };
+
+        utterance.onerror = (e) => {
+          console.warn("Nara Read Aloud Speech issue:", e);
+          // Prevent stuck speech loops on interrupt signals
+          if (e.error !== "interrupted" && e.error !== "canceled") {
+            // For other rare browser errors, advance manually after a safe delay
+            const failTimeout = setTimeout(() => {
+              if (highlightedSentenceIndex < sentences.length - 1) {
+                setHighlightedSentenceIndex((prev) => prev + 1);
+              } else if (activeParagraphIndex < activeChapter.content.length - 1) {
+                onUpdatePosition({
+                  ...currentPosition,
+                  paragraphIndex: activeParagraphIndex + 1,
+                });
+                setHighlightedSentenceIndex(0);
+              } else {
+                setIsPlayingAudio(false);
+                setHighlightedSentenceIndex(0);
+              }
+            }, 1200);
+            return () => clearTimeout(failTimeout);
+          }
+        };
+
+        window.speechSynthesis.speak(utterance);
       }
+    } else {
+      window.speechSynthesis.cancel();
     }
 
     return () => {
-      if (audioIntervalRef.current) clearInterval(audioIntervalRef.current);
+      window.speechSynthesis.cancel();
     };
-  }, [isPlayingAudio, activeParagraphIndex, activeChapter, audioSpeed]);
+  }, [isPlayingAudio, highlightedSentenceIndex, activeParagraphIndex, activeChapter, audioSpeed]);
 
   // Premium AI Feature: Simplify language of paragraph
   const handleSimplifyParagraph = async (pIndex: number, text: string) => {
@@ -348,7 +399,7 @@ export default function ReaderView({
   return (
     <div id="reader-shell" className="min-h-screen bg-[#F0EDE5] text-[#222222] font-sans flex flex-col relative">
       
-      {/* 1. Header with minimalist Lumina Logo style */}
+      {/* 1. Header with minimalist Nara Logo style */}
       <header className="h-16 border-b border-[#DCD9D0] px-6 flex items-center justify-between bg-white/50 backdrop-blur-sm sticky top-0 z-40">
         <div className="flex items-center gap-4">
           <button
@@ -361,8 +412,7 @@ export default function ReaderView({
           </button>
           
           <div className="hidden sm:flex items-center gap-2">
-            <div className="w-6 h-6 bg-[#5B8FB9] rounded flex items-center justify-center text-white text-xs font-bold">L</div>
-            <span className="text-xs font-black tracking-widest uppercase">Lumina Reader</span>
+            <NaraLogo showText={true} size="sm" />
           </div>
         </div>
 
