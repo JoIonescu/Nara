@@ -98,7 +98,7 @@ export default function Dashboard({
       setFetchingSubject(true);
       try {
         const querySubject = selectedSubject.toLowerCase().replace(" ", "_");
-        const response = await fetch(`/api/proxy/openlibrary/subjects?subject=${querySubject}&limit=12`);
+        const response = await fetch(`https://openlibrary.org/subjects/${querySubject}.json?limit=12`);
         if (!response.ok) {
           throw new Error("Could not pull subject works from Open Library.");
         }
@@ -169,7 +169,7 @@ export default function Dashboard({
     setSearchingOnline(true);
     setOnlineError(null);
     try {
-      const response = await fetch(`/api/proxy/openlibrary/search?q=${encodeURIComponent(term)}&limit=9`);
+      const response = await fetch(`https://openlibrary.org/search.json?q=${encodeURIComponent(term)}&limit=9`);
       if (!response.ok) {
         throw new Error("Could not pull results from Open Library database.");
       }
@@ -223,13 +223,19 @@ export default function Dashboard({
   const handleGenerateAndReadBook = async (onlineBook: Book) => {
     setGeneratingBookId(onlineBook.id);
     try {
-      const response = await fetch("/api/ai/generate-book", {
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          title: onlineBook.title,
-          author: onlineBook.author,
-          category: onlineBook.category
+          model: "claude-sonnet-4-6",
+          max_tokens: 1000,
+          messages: [{
+            role: "user",
+            content: `Create a short dyslexia-friendly reading excerpt for the book "${onlineBook.title}" by ${onlineBook.author}. Return ONLY valid JSON, no markdown.
+
+Return this exact shape:
+{"chapters":[{"id":"chap-1","title":"Opening","content":["paragraph 1","paragraph 2","paragraph 3"]}],"characters":[{"name":"Name","role":"Role","relationships":"Description","events":"Recent events"}],"concepts":[{"term":"Key concept","definition":"Simple definition","keyTerms":["word1","word2"],"examples":["An example sentence"]}]}`
+          }]
         })
       });
       
@@ -237,7 +243,10 @@ export default function Dashboard({
         throw new Error("Failed to format the book content.");
       }
       
-      const parsed = await response.json();
+      const data = await response.json();
+      const text = data.content?.[0]?.text || "{}";
+      const clean = text.replace(/```json|```/g, "").trim();
+      const parsed = JSON.parse(clean);
       
       const fullyFormedBook: Book = {
         ...onlineBook,
@@ -676,70 +685,84 @@ export default function Dashboard({
             
             {/* Tab 1: Library Index */}
             {activeTab === "library" && (() => {
+              // Open Library style: cover-dominant vertical card for horizontal shelf rows
               const renderBookCard = (book: Book, isGlobal = false) => {
-                const limitDesc = book.description.substring(0, 100) + "...";
                 return (
                   <div
                     key={book.id}
+                    className="group flex-shrink-0 w-36 flex flex-col cursor-pointer"
                     onClick={() => setDetailedBookId(book.id)}
-                    className="group bg-white border border-[#DCD9D0] rounded-2xl p-5 flex flex-col justify-between hover:border-[#5B8FB9] hover:shadow-lg cursor-pointer transition-all duration-300"
                   >
-                    <div className="space-y-4">
+                    <div className="relative w-36 h-52 rounded-lg overflow-hidden shadow-md border border-[#DCD9D0]/60 bg-[#F0EDE6] flex items-center justify-center">
                       {book.coverUrl ? (
-                        <div className="relative h-44 rounded-xl overflow-hidden shadow-sm border border-[#DCD9D0]/70 bg-[#F7F4EE] flex items-center justify-center">
+                        <>
                           <img
                             src={book.coverUrl}
                             alt={book.title}
-                            className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-300 p-1"
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                             referrerPolicy="no-referrer"
                             loading="lazy"
                             onError={(e) => {
                               (e.target as HTMLImageElement).style.display = 'none';
-                              const fallback = (e.target as HTMLImageElement).nextElementSibling;
-                              if (fallback) fallback.classList.remove('hidden');
+                              const fallback = (e.target as HTMLImageElement).nextElementSibling as HTMLElement;
+                              if (fallback) fallback.style.display = 'flex';
                             }}
                           />
-                          <div className="hidden absolute inset-0 bg-gradient-to-br from-[#5b8fb9] to-[#bfd0dc] p-4 text-white flex flex-col justify-between text-left">
-                            <span className="text-[10px] font-black uppercase opacity-75">{book.author}</span>
-                            <p className="text-sm font-extrabold leading-tight">{book.title}</p>
-                            <span className="text-[9px] font-black bg-white/20 px-2 py-1 rounded w-fit">Free Global Edition</span>
+                          <div className={`hidden absolute inset-0 bg-gradient-to-br ${book.coverColor} p-3 text-white flex-col justify-between`}>
+                            <span className="text-[9px] font-black uppercase opacity-80 line-clamp-1">{book.author}</span>
+                            <p className="text-xs font-extrabold leading-tight line-clamp-3">{book.title}</p>
                           </div>
-                        </div>
+                        </>
                       ) : (
-                        <div className={`h-44 rounded-xl bg-gradient-to-br ${book.coverColor} p-4 text-white flex flex-col justify-between border border-black/5 shadow-inner`}>
-                          <span className="text-[10px] font-black uppercase opacity-75">{book.author}</span>
-                          <p className="text-base font-extrabold leading-tight">{book.title}</p>
-                          <div className="flex justify-between items-center text-[9px] font-black bg-white/20 p-1.5 rounded">
-                            <span>{book.difficulty} • {book.ageGroup ? `${book.ageGroup} Group` : "All Ages"}</span>
-                            <span>{book.reading_time}m length</span>
-                          </div>
+                        <div className={`w-full h-full bg-gradient-to-br ${book.coverColor} p-3 text-white flex flex-col justify-between`}>
+                          <span className="text-[9px] font-black uppercase opacity-80 line-clamp-1">{book.author}</span>
+                          <p className="text-xs font-extrabold leading-tight line-clamp-3">{book.title}</p>
+                          <span className="text-[8px] font-black bg-white/20 px-1.5 py-0.5 rounded w-fit">{book.difficulty}</span>
                         </div>
                       )}
-                      <div>
-                        <div className="flex items-center gap-1.5">
-                          <span className={`px-2 py-0.5 text-[9px] font-black rounded uppercase ${isGlobal ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-[#EEF5FA] text-[#5B8FB9]'}`}>
-                            {isGlobal ? "Global Library" : "Offline Ready"}
-                          </span>
-                          <span className="text-[9px] text-[#888888] font-bold uppercase tracking-wider">{book.category}</span>
-                        </div>
-                        <h4 className="text-sm font-bold text-slate-800 mt-2 line-clamp-1 group-hover:text-[#5B8FB9] transition-colors">{book.title}</h4>
-                        <p className="text-xs text-slate-500 font-medium">{book.author}</p>
-                        <p className="text-xs text-slate-400 mt-1.5 leading-relaxed line-clamp-2">{limitDesc}</p>
-                      </div>
+                      <span className={`absolute top-1.5 left-1.5 text-[8px] font-black px-1.5 py-0.5 rounded ${isGlobal ? 'bg-emerald-600 text-white' : 'bg-[#5B8FB9] text-white'}`}>
+                        {isGlobal ? "Global" : "Offline"}
+                      </span>
                     </div>
-                    
+                    <div className="mt-2 px-0.5">
+                      <p className="text-xs font-bold text-slate-800 line-clamp-2 leading-tight group-hover:text-[#5B8FB9] transition-colors">{book.title}</p>
+                      <p className="text-[10px] text-slate-500 mt-0.5 line-clamp-1">{book.author}</p>
+                    </div>
                     <button
-                      className={`mt-4 w-full py-2.5 border rounded-xl text-xs font-black transition-all uppercase tracking-widest ${
-                        isGlobal 
-                          ? 'border-emerald-200 text-emerald-700 bg-emerald-50 hover:bg-emerald-600 hover:text-white hover:border-emerald-700 shadow-sm'
-                          : 'border-[#5B8FB9] text-[#5B8FB9] bg-white hover:bg-[#5B8FB9] hover:text-white shadow-sm'
+                      onClick={(e) => { e.stopPropagation(); isGlobal ? handleGenerateAndReadBook(book) : onSelectBook(book.id); }}
+                      className={`mt-2 w-full py-1.5 rounded-lg text-[10px] font-black transition-all ${
+                        isGlobal
+                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-600 hover:text-white'
+                          : 'bg-[#EEF5FA] text-[#5B8FB9] border border-[#5B8FB9]/30 hover:bg-[#5B8FB9] hover:text-white'
                       }`}
                     >
-                      {isGlobal ? "Convert & Read" : "Open Book"}
+                      {isGlobal ? (generatingBookId === book.id ? "Loading..." : "Read") : "Read"}
                     </button>
                   </div>
                 );
               };
+
+              const renderShelfRow = (label: string, emoji: string, bookList: Book[], isGlobal = false, loading = false) => (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-base">{emoji}</span>
+                    <h3 className="text-sm font-black text-slate-700 uppercase tracking-widest">{label}</h3>
+                    {isGlobal && <span className="text-[9px] bg-emerald-50 text-emerald-700 border border-emerald-100 font-black px-2 py-0.5 rounded">Open Library</span>}
+                  </div>
+                  {loading ? (
+                    <div className="flex items-center gap-3 py-4">
+                      <Loader2 className="w-5 h-5 animate-spin text-[#5B8FB9]" />
+                      <span className="text-xs text-slate-400">Loading titles...</span>
+                    </div>
+                  ) : bookList.length === 0 ? (
+                    <p className="text-xs text-slate-400 italic py-3">No titles found.</p>
+                  ) : (
+                    <div className="flex gap-4 overflow-x-auto pb-3" style={{scrollbarWidth:'none'}}>
+                      {bookList.map((book) => renderBookCard(book, isGlobal))}
+                    </div>
+                  )}
+                </div>
+              );
 
               const subjectOptions = [
                 { key: "classics", label: "Classics", emoji: "📜" },
@@ -897,90 +920,31 @@ export default function Dashboard({
                         </div>
                       </div>
 
-                      {/* Section 1: Curated Bookshelf (Main 10 Books with offline full chapters preloaded) */}
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between border-b pb-2 border-[#DCD9D0]/50">
-                          <h3 className="text-xs font-black uppercase text-[#666666] tracking-widest flex items-center gap-2">
-                            <span>📚</span> Curated Classic Bookshelf (Offline Ready)
-                          </h3>
-                          <span className="text-[10px] font-bold text-gray-400">
-                            {(() => {
-                              const matches = books.filter(b => {
-                                const sub = selectedSubject.toLowerCase();
-                                if (sub === "classics") return b.category.toLowerCase().includes("classic");
-                                if (sub === "fantasy") return ["alice-wonderland", "peter-pan", "the-little-prince", "the-secret-garden"].includes(b.id);
-                                if (sub === "science_fiction") return ["astronomy-basics", "frankenstein", "the-time-machine"].includes(b.id);
-                                if (sub === "children") return ["alice-wonderland", "peter-pan", "the-little-prince", "the-secret-garden"].includes(b.id);
-                                if (sub === "romance") return ["pride-prejudice"].includes(b.id);
-                                if (sub === "mystery") return ["sherlock-holmes", "frankenstein"].includes(b.id);
-                                return false;
-                              });
-                              return `${matches.length} volumes matches`;
-                            })()}
-                          </span>
-                        </div>
-                        {(() => {
-                          const localMatches = books.filter(b => {
-                            const sub = selectedSubject.toLowerCase();
-                            if (sub === "classics") return b.category.toLowerCase().includes("classic");
-                            if (sub === "fantasy") return ["alice-wonderland", "peter-pan", "the-little-prince", "the-secret-garden"].includes(b.id);
-                            if (sub === "science_fiction") return ["astronomy-basics", "frankenstein", "the-time-machine"].includes(b.id);
-                            if (sub === "children") return ["alice-wonderland", "peter-pan", "the-little-prince", "the-secret-garden"].includes(b.id);
-                            if (sub === "romance") return ["pride-prejudice"].includes(b.id);
-                            if (sub === "mystery") return ["sherlock-holmes", "frankenstein"].includes(b.id);
-                            return false;
-                          });
+                      {/* Offline Bookshelf Row */}
+                      {renderShelfRow(
+                        "Your Bookshelf",
+                        "📚",
+                        books.filter(b => {
+                          const sub = selectedSubject.toLowerCase();
+                          if (sub === "classics") return b.category.toLowerCase().includes("classic");
+                          if (sub === "fantasy") return ["alice-wonderland", "peter-pan", "the-little-prince", "the-secret-garden"].includes(b.id);
+                          if (sub === "science_fiction") return ["astronomy-basics", "frankenstein", "the-time-machine"].includes(b.id);
+                          if (sub === "children") return ["alice-wonderland", "peter-pan", "the-little-prince", "the-secret-garden"].includes(b.id);
+                          if (sub === "romance") return ["pride-prejudice"].includes(b.id);
+                          if (sub === "mystery") return ["sherlock-holmes", "frankenstein"].includes(b.id);
+                          return true;
+                        }),
+                        false
+                      )}
 
-                          if (localMatches.length > 0) {
-                            return (
-                              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 font-sans">
-                                {localMatches.map((book) => renderBookCard(book, false))}
-                              </div>
-                            );
-                          } else {
-                            return (
-                              <div className="py-8 px-4 text-center rounded-2xl border border-dashed border-[#DCD9D0] bg-white/40 text-stone-600 text-xs font-semibold space-y-1">
-                                <p>No pre-loaded local Bookshelf volumes in this genre.</p>
-                                <p className="text-[10px] text-gray-500 font-normal">Enjoy free live global titles retrieved from the Open Library stream box below!</p>
-                              </div>
-                            );
-                          }
-                        })()}
-                      </div>
-
-                      {/* Section 2: Online Genre Stream (Subject books loaded from Open Library APIs) */}
-                      <div className="space-y-4 border-t border-[#DCD9D0]/60 pt-6">
-                        <div className="flex items-center justify-between border-b pb-2 border-[#DCD9D0]/50">
-                          <h3 className="text-xs font-black uppercase text-[#666666] tracking-widest flex items-center gap-2">
-                            <span>🌎</span> Open Library Stream: {subjectOptions.find(o => o.key === selectedSubject)?.label || selectedSubject}
-                          </h3>
-                          <span className="text-[10px] bg-emerald-50 text-emerald-800 font-extrabold px-2.5 py-1 rounded-md border border-emerald-100">Live Global Index</span>
-                        </div>
-
-                        {fetchingSubject ? (
-                          <div className="py-24 text-center rounded-2xl border border-dashed border-[#DCD9D0] bg-white/40">
-                            <Loader2 className="w-8 h-8 animate-spin text-[#5B8FB9] mx-auto" />
-                            <p className="text-xs font-black mt-4 text-[#5B8FB9] uppercase tracking-widest">Calling Open Library...</p>
-                            <p className="text-[10px] text-gray-400 mt-1">Retrieving trending public domain editions, covers, and details.</p>
-                          </div>
-                        ) : subjectBooks.length > 0 ? (
-                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 font-sans animate-fadeIn">
-                            {subjectBooks.map((book) => renderBookCard(book, true))}
-                          </div>
-                        ) : (
-                          <div className="py-16 text-center rounded-2xl border border-dashed border-[#DCD9D0] bg-white/40">
-                            <p className="text-xs text-gray-400 italic">No global books retrieved for this category. Please tap another subject.</p>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Shelf Guide Box */}
-                      <div className="bg-[#5B8FB9] hover:bg-[#4C7C9E] rounded-2xl p-6 text-white transition-colors">
-                        <p className="text-xs font-black uppercase tracking-widest mb-1 opacity-80">Design Concept</p>
-                        <p className="text-sm leading-relaxed max-w-xl">
-                          Nara merges a curated offline repository (10 pre-loaded classics) with a massive global public domain index. Browse freely, select any title, and format it automatically for dyslexia/spacing support.
-                        </p>
-                      </div>
+                      {/* Open Library Stream Row */}
+                      {renderShelfRow(
+                        subjectOptions.find(o => o.key === selectedSubject)?.label || selectedSubject,
+                        subjectOptions.find(o => o.key === selectedSubject)?.emoji || "🌎",
+                        subjectBooks,
+                        true,
+                        fetchingSubject
+                      )}
                     </div>
                   ) : (
                     <div className="space-y-8 animate-fadeIn">
@@ -988,7 +952,7 @@ export default function Dashboard({
                       <div>
                         <h3 className="text-xs font-extrabold uppercase text-[#777777] tracking-widest mb-4">Matches in My Bookshelf</h3>
                         {filteredBooks.length > 0 ? (
-                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 font-sans">
+                          <div className="flex gap-4 overflow-x-auto pb-3" style={{scrollbarWidth:'none'}}>
                             {filteredBooks.map((book) => renderBookCard(book, false))}
                           </div>
                         ) : (
@@ -1028,7 +992,7 @@ export default function Dashboard({
                             <p className="text-[10px] text-slate-500 mt-0.5">Searching for covers, authors, metadata, and books matching "{searchQuery}" automatically.</p>
                           </div>
                         ) : onlineBooks.length > 0 ? (
-                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                          <div className="flex gap-4 overflow-x-auto pb-3" style={{scrollbarWidth:'none'}}>
                             {onlineBooks.map((book) => renderBookCard(book, true))}
                           </div>
                         ) : (
