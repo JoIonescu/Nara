@@ -26,14 +26,14 @@ export default function App() {
     paragraphIndex: 0,
   });
 
-  // Streaks, finished counts, total seconds
+  // Streaks, finished counts, total seconds — zeroed so new users start fresh
   const [stats, setStats] = useState<ReadingStats>({
-    booksCompleted: 1,
-    readingStreak: 3,
-    minutesRead: 24,
-    wordsRead: 4400,
+    booksCompleted: 0,
+    readingStreak: 0,
+    minutesRead: 0,
+    wordsRead: 0,
     dailyGoalMinutes: 30,
-    lastReadDate: new Date().toISOString().split("T")[0],
+    lastReadDate: "",
   });
 
   // Dynamic user-feedback checkups tracker
@@ -141,15 +141,15 @@ export default function App() {
       if (docSnap.exists()) {
         setStats(docSnap.data() as ReadingStats);
       } else {
-        // Seed stats
+        // Seed stats with real zeros for new users
         const statsPayload = {
           userId: currentUser.uid,
-          booksCompleted: stats.booksCompleted,
-          readingStreak: stats.readingStreak,
-          minutesRead: stats.minutesRead,
-          wordsRead: stats.wordsRead,
-          dailyGoalMinutes: stats.dailyGoalMinutes,
-          ...(stats.lastReadDate ? { lastReadDate: stats.lastReadDate } : {})
+          booksCompleted: 0,
+          readingStreak: 0,
+          minutesRead: 0,
+          wordsRead: 0,
+          dailyGoalMinutes: 30,
+          lastReadDate: "",
         };
         setDoc(statsDocRef, statsPayload).catch(e => handleFirestoreError(e, OperationType.WRITE, `users/${currentUser!.uid}/stats/reading`));
       }
@@ -303,15 +303,39 @@ export default function App() {
     }
   };
 
+  // Real reading stats: streak logic + actual minute/word tracking
   const handleReadingMinute = () => {
     const addedMinutes = 1;
     const addedWords = 180;
+    const today = new Date().toISOString().split("T")[0];
+
     setStats((prev) => {
+      const lastDate = prev.lastReadDate || "";
+      const yesterday = new Date(Date.now() - 86400000).toISOString().split("T")[0];
+
+      let newStreak = prev.readingStreak;
+      if (lastDate === today) {
+        // Already counted today — don't increment streak again
+        newStreak = prev.readingStreak;
+      } else if (lastDate === yesterday) {
+        // Consecutive day — extend streak
+        newStreak = prev.readingStreak + 1;
+      } else if (lastDate === "") {
+        // First ever session
+        newStreak = 1;
+      } else {
+        // Gap in reading — reset streak to 1
+        newStreak = 1;
+      }
+
       const updated = {
         ...prev,
         minutesRead: prev.minutesRead + addedMinutes,
         wordsRead: prev.wordsRead + addedWords,
+        readingStreak: newStreak,
+        lastReadDate: today,
       };
+
       localStorage.setItem("lumina_stats", JSON.stringify(updated));
 
       if (currentUser) {
@@ -323,7 +347,7 @@ export default function App() {
           minutesRead: updated.minutesRead,
           wordsRead: updated.wordsRead,
           dailyGoalMinutes: updated.dailyGoalMinutes,
-          ...(updated.lastReadDate ? { lastReadDate: updated.lastReadDate } : {})
+          lastReadDate: updated.lastReadDate,
         }).catch(e => handleFirestoreError(e, OperationType.WRITE, `users/${currentUser.uid}/stats/reading`));
       }
 
@@ -332,7 +356,7 @@ export default function App() {
   };
 
   const handleAnswerSatisfaction = (feeling: string) => {
-    const updated = [feeling, ...satisfactionHistory].slice(0, 5); // Store top 5 reactions
+    const updated = [feeling, ...satisfactionHistory].slice(0, 5);
     setSatisfactionHistory(updated);
     localStorage.setItem("lumina_satisfactions", JSON.stringify(updated));
   };
@@ -359,7 +383,6 @@ export default function App() {
       <Onboarding
         onComplete={(newPrefs) => {
           savePreferences(newPrefs);
-          // Set standard starting position or default from last selection
           handleUpdatePosition({
             bookId: "alice-wonderland",
             chapterId: "chapter-1",
@@ -370,7 +393,7 @@ export default function App() {
     );
   }
 
-  // Phase B: Immersive Reading Experience Viewer (centered layout, max-width 700px, premium overlay tools)
+  // Phase B: Immersive Reading Experience Viewer
   if (selectedBookId) {
     const activeReadingBook = SAMPLE_BOOKS.find((b) => b.id === selectedBookId) || SAMPLE_BOOKS[0];
     return (
@@ -388,21 +411,21 @@ export default function App() {
     );
   }
 
-  // Phase C: Platform Dashboard Workspace (Library catalog, stats bento cards, profile preferences and accessibility checkups)
+  // Phase C: Platform Dashboard Workspace
   return (
     <>
       {magicLinkStatus && (
         <div className={`fixed top-4 right-4 z-50 p-4 rounded-2xl shadow-lg border text-xs font-bold max-w-sm flex flex-col gap-1 transition-all ${
-          magicLinkStatus.type === "success" 
-            ? "bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/90 dark:text-emerald-300 dark:border-emerald-800" 
+          magicLinkStatus.type === "success"
+            ? "bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/90 dark:text-emerald-300 dark:border-emerald-800"
             : magicLinkStatus.type === "error"
             ? "bg-rose-50 text-rose-800 border-rose-200 dark:bg-rose-950/90 dark:text-rose-300 dark:border-rose-800"
             : "bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/90 dark:text-amber-300 dark:border-amber-800 animate-pulse"
         }`}>
           <div className="flex justify-between items-center gap-4">
             <span>{magicLinkStatus.message}</span>
-            <button 
-              onClick={() => setMagicLinkStatus(null)} 
+            <button
+              onClick={() => setMagicLinkStatus(null)}
               className="text-stone-400 hover:text-stone-600 font-extrabold text-base leading-none cursor-pointer"
             >
               ×
@@ -417,10 +440,9 @@ export default function App() {
         stats={stats}
         currentPosition={currentPosition}
         onSelectBook={(bookId) => {
-          // Initialize current position settings for this target book when selected
           handleUpdatePosition({
             bookId,
-            chapterId: bookId === "the-metamorphosis" ? "chapter-1" : "chapter-1",
+            chapterId: "chapter-1",
             paragraphIndex: 0,
           });
           setSelectedBookId(bookId);

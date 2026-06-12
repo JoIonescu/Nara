@@ -317,60 +317,6 @@ useEffect(() => {
   return () => { window.speechSynthesis.cancel(); };
 }, [isPlayingAudio, highlightedSentenceIndex, activeParagraphIndex, activeChapter, audioSpeed]);
 
-        // Set callbacks for synchronization
-        utterance.onend = () => {
-          if (highlightedSentenceIndex < sentences.length - 1) {
-            setHighlightedSentenceIndex((prev) => prev + 1);
-          } else {
-            // End of active paragraph block. Advance position in document context
-            if (activeParagraphIndex < activeChapter.content.length - 1) {
-              onUpdatePosition({
-                ...currentPosition,
-                paragraphIndex: activeParagraphIndex + 1,
-              });
-              setHighlightedSentenceIndex(0);
-            } else {
-              // Reached final sentence of active chapter! Pause audio controls safely
-              setIsPlayingAudio(false);
-              setHighlightedSentenceIndex(0);
-            }
-          }
-        };
-
-        utterance.onerror = (e) => {
-          console.warn("Nara Read Aloud Speech issue:", e);
-          // Prevent stuck speech loops on interrupt signals
-          if (e.error !== "interrupted" && e.error !== "canceled") {
-            // For other rare browser errors, advance manually after a safe delay
-            const failTimeout = setTimeout(() => {
-              if (highlightedSentenceIndex < sentences.length - 1) {
-                setHighlightedSentenceIndex((prev) => prev + 1);
-              } else if (activeParagraphIndex < activeChapter.content.length - 1) {
-                onUpdatePosition({
-                  ...currentPosition,
-                  paragraphIndex: activeParagraphIndex + 1,
-                });
-                setHighlightedSentenceIndex(0);
-              } else {
-                setIsPlayingAudio(false);
-                setHighlightedSentenceIndex(0);
-              }
-            }, 1200);
-            return () => clearTimeout(failTimeout);
-          }
-        };
-
-        window.speechSynthesis.speak(utterance);
-      }
-    } else {
-      window.speechSynthesis.cancel();
-    }
-
-    return () => {
-      window.speechSynthesis.cancel();
-    };
-  }, [isPlayingAudio, highlightedSentenceIndex, activeParagraphIndex, activeChapter, audioSpeed]);
-
   // Premium AI Feature: Simplify language of paragraph
   const handleSimplifyParagraph = async (pIndex: number, text: string) => {
     // Already simplified? Dismiss it.
@@ -381,16 +327,21 @@ useEffect(() => {
 
     setAiSimplifyLoading(true);
     try {
-      const res = await fetch("/api/ai/simplify", {
+      const res = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text }),
+        body: JSON.stringify({
+          model: "claude-sonnet-4-6",
+          max_tokens: 1000,
+          messages: [{
+            role: "user",
+            content: `You are a reading assistant for dyslexic readers. Rewrite this passage in simpler, clearer language. Keep the same meaning but use shorter sentences and easier words. Return only the simplified text, nothing else.\n\nPassage: "${text}"`
+          }]
+        }),
       });
       const data = await res.json();
-      setAiSimplifyOverlay({
-        paragraphIndex: pIndex,
-        simplifiedText: data.simplifiedText || text,
-      });
+      const simplifiedText = data.content?.[0]?.text || text;
+      setAiSimplifyOverlay({ paragraphIndex: pIndex, simplifiedText });
     } catch (err) {
       console.error(err);
     } finally {
@@ -406,19 +357,23 @@ useEffect(() => {
     setAiExplainLoading(true);
     setActiveSideDrawer("aichat");
     try {
-      const res = await fetch("/api/ai/explain", {
+      const res = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          text: textToExplain,
-          context: activeChapter.content.join(" ")
+        body: JSON.stringify({
+          model: "claude-sonnet-4-6",
+          max_tokens: 1000,
+          messages: [{
+            role: "user",
+            content: `You are a warm, encouraging reading coach helping a dyslexic reader. Explain this text in simple, friendly language using short sentences.\n\nText: "${textToExplain}"\n\nContext: "${activeChapter.content.slice(0, 2).join(" ")}"`
+          }]
         }),
       });
       const data = await res.json();
-      setAiExplainOutput(data.explanation || "No explanation returned from reading assistant.");
+      setAiExplainOutput(data.content?.[0]?.text || "No explanation returned from reading assistant.");
     } catch (err) {
       console.error(err);
-      setAiExplainOutput("Unable to connect to reading assistant offline.");
+      setAiExplainOutput("Unable to connect to reading assistant. Please check your connection.");
     } finally {
       setAiExplainLoading(false);
     }
@@ -429,16 +384,23 @@ useEffect(() => {
     setAiSummaryLoading(true);
     setShowSummaryModal(true);
     try {
-      const res = await fetch("/api/ai/summarize", {
+      const res = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          title: activeChapter.title,
-          paragraphs: activeChapter.content 
+        body: JSON.stringify({
+          model: "claude-sonnet-4-6",
+          max_tokens: 1000,
+          messages: [{
+            role: "user",
+            content: `You are a reading coach for dyslexic readers. Summarize this book chapter in a structured JSON format. Return ONLY valid JSON, no markdown, no explanation.\n\nChapter: "${activeChapter.title}"\nContent: "${activeChapter.content.join(" ")}"\n\nReturn this exact JSON shape:\n{"chapterSummary":{"keyIdeas":["idea1","idea2","idea3"],"mainEvents":["event1","event2","event3"],"characterUpdates":["update1","update2"]}}`
+          }]
         }),
       });
       const data = await res.json();
-      setAiSummaryOutput(data.chapterSummary);
+      const text = data.content?.[0]?.text || "{}";
+      const clean = text.replace(/```json|```/g, "").trim();
+      const parsed = JSON.parse(clean);
+      setAiSummaryOutput(parsed.chapterSummary);
     } catch (err) {
       console.error(err);
       setAiSummaryOutput({
