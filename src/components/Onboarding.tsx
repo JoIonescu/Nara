@@ -76,6 +76,10 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
 
   const handleFinish = () => {
     onComplete({
+      letterSpacing: 0.05,
+      wordSpacing: 0.1,
+      bionicReading: false,
+      syllableBreaking: false,
       font,
       textSize,
       lineSpacing,

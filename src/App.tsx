@@ -227,6 +227,7 @@ export default function App() {
 
   // 2. Local Storage & Firestore dual-sync helpers
   const savePreferences = (newPrefs: UserPreferences) => {
+    newPrefs = { letterSpacing: 0.05, wordSpacing: 0.1, bionicReading: false, syllableBreaking: false, ...newPrefs };
     setPreferences(newPrefs);
     localStorage.setItem("lumina_preferences", JSON.stringify(newPrefs));
     setHasCompletedOnboarding(true);

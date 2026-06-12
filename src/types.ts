@@ -7,9 +7,13 @@ export interface UserPreferences {
   font: FontOption;
   textSize: number; // 16px to 36px
   lineSpacing: number; // 1.2 to 2.5
+  letterSpacing: number; // 0 to 0.2em
+  wordSpacing: number; // 0 to 0.5em
   theme: ThemeOption;
   support: SupportMode;
   reduceMotion: boolean;
+  bionicReading: boolean;
+  syllableBreaking: boolean;
   narratorVoice?: string;
 }
 
