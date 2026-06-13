@@ -2,7 +2,7 @@
 ## Nara  <br /> <br />
 The name Nara comes from narration - the idea that every reader deserves a story they can follow and every page is a small quest for understanding. 
 
-The journey to reading for everyone
+The journey to reading for everyone <br /> <br />
 
 
 Nara is an accessible reading platform designed to make digital content easier to read, understand, and retain for people with dyslexia, ADHD, visual stress, and other reading challenges.
