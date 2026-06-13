@@ -306,6 +306,17 @@ Return this exact shape:
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [selectedAgeGroup, setSelectedAgeGroup] = useState<string>("All");
   const [selectedSort, setSelectedSort] = useState<string>("recommended");
+  const [savedBookIds, setSavedBookIds] = useState<string[]>(() => {
+    try { return JSON.parse(localStorage.getItem("lumina_saved_book_ids") || "[]"); } catch { return []; }
+  });
+  const handleSaveBook = (bookId: string) => {
+    if (!currentUser) return;
+    setSavedBookIds(prev => {
+      const updated = prev.includes(bookId) ? prev.filter(id => id !== bookId) : [...prev, bookId];
+      localStorage.setItem("lumina_saved_book_ids", JSON.stringify(updated));
+      return updated;
+    });
+  };
 
   // Selected Book for the Detail View
   const [detailedBookId, setDetailedBookId] = useState<string | null>(null);
@@ -438,32 +449,28 @@ Return this exact shape:
   const activeBook = books.find((b) => b.id === currentPosition.bookId) || books[0];
 
   // Filters catalog
-  const filteredBooks = books.filter((book) => {
+  const applyFiltersAndSort = (bookList: Book[]) => bookList.filter((book) => {
     const matchesSearch =
       book.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       book.author.toLowerCase().includes(searchQuery.toLowerCase()) ||
       book.category.toLowerCase().includes(searchQuery.toLowerCase());
-    
     const matchesDifficulty = selectedDifficulty === "All" || book.difficulty === selectedDifficulty;
     const matchesCategory = selectedCategory === "All" || book.category === selectedCategory;
     const matchesAgeGroup = selectedAgeGroup === "All" || book.ageGroup === selectedAgeGroup;
-
     return matchesSearch && matchesDifficulty && matchesCategory && matchesAgeGroup;
   }).sort((a, b) => {
-    if (selectedSort === "az") {
-      return a.title.localeCompare(b.title);
-    }
-    if (selectedSort === "za") {
-      return b.title.localeCompare(a.title);
-    }
-    if (selectedSort === "length-asc") {
-      return a.reading_time - b.reading_time;
-    }
-    if (selectedSort === "length-desc") {
-      return b.reading_time - a.reading_time;
-    }
-    return 0; // Default Order
+    if (selectedSort === "az") return a.title.localeCompare(b.title);
+    if (selectedSort === "za") return b.title.localeCompare(a.title);
+    if (selectedSort === "length-asc") return a.reading_time - b.reading_time;
+    if (selectedSort === "length-desc") return b.reading_time - a.reading_time;
+    return 0;
   });
+  const filteredBooks = applyFiltersAndSort(books);
+  const filteredSubjectBooks = applyFiltersAndSort(subjectBooks);
+
+
+
+
 
   const categories = ["All", "Beginner Classics", "Young Adult Classics", "Personal Growth / Science"];
 
@@ -570,8 +577,12 @@ Return this exact shape:
         {/* IF A DETAILED BOOK VIEW IS OPEN, INTERCEPT LAYOUT */}
         {detailedBookId ? (
           (() => {
-            const detailBook = books.find((b) => b.id === detailedBookId) || onlineBooks.find((b) => b.id === detailedBookId)!;
-            const diffSpec = DIFFICULTY_SPECS[detailBook.difficulty];
+            const detailBook = books.find((b) => b.id === detailedBookId)
+              || onlineBooks.find((b) => b.id === detailedBookId)
+              || subjectBooks.find((b) => b.id === detailedBookId)
+              || (() => { try { return JSON.parse(localStorage.getItem("lumina_cached_books") || "[]").find((b: Book) => b.id === detailedBookId); } catch { return null; } })();
+            if (!detailBook) { setDetailedBookId(null); return null; }
+            const diffSpec = DIFFICULTY_SPECS[detailBook.difficulty as keyof typeof DIFFICULTY_SPECS] || DIFFICULTY_SPECS["Easy"];
             const activeProfileClass = fontClasses[preferences.font];
             const previewTextSample = (detailBook.chapters && detailBook.chapters[0]?.content[0]) || "This custom Open Library book is fully compatible with Nara's Visual Stress assistant tools. Adjust your line space, font typeface, and reading guides above.";
 
@@ -659,7 +670,14 @@ Return this exact shape:
                       </div>
                     ) : detailBook.chapters && detailBook.chapters.length > 0 ? (
                       <button
-                        onClick={() => onSelectBook(detailBook.id)}
+                        onClick={() => {
+                          try {
+                            const cached = JSON.parse(localStorage.getItem("lumina_cached_books") || "[]");
+                            const without = cached.filter((b: Book) => b.id !== detailBook.id);
+                            localStorage.setItem("lumina_cached_books", JSON.stringify([detailBook, ...without].slice(0, 20)));
+                          } catch {}
+                          onSelectBook(detailBook.id);
+                        }}
                         className="w-full h-14 bg-[#5B8FB9] text-white font-black text-sm uppercase rounded-2xl tracking-widest hover:bg-[#497A9E] transition-all flex items-center justify-center gap-2 shadow-lg hover:translate-y-[-1px] cursor-pointer"
                       >
                         <span>Start Reading Experience</span>
@@ -728,41 +746,86 @@ Return this exact shape:
                       <p className="text-xs font-bold text-slate-800 line-clamp-2 leading-tight group-hover:text-[#5B8FB9] transition-colors">{book.title}</p>
                       <p className="text-[10px] text-slate-500 mt-0.5 line-clamp-1">{book.author}</p>
                     </div>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); isGlobal ? handleGenerateAndReadBook(book) : onSelectBook(book.id); }}
-                      className={`mt-2 w-full py-1.5 rounded-lg text-[10px] font-black transition-all ${
-                        isGlobal
-                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-600 hover:text-white'
-                          : 'bg-[#EEF5FA] text-[#5B8FB9] border border-[#5B8FB9]/30 hover:bg-[#5B8FB9] hover:text-white'
-                      }`}
-                    >
-                      {isGlobal ? (generatingBookId === book.id ? "Loading..." : "Read") : "Read"}
-                    </button>
+                    <div className="mt-2 flex gap-1">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (isGlobal) { handleGenerateAndReadBook(book); }
+                          else {
+                            try {
+                              const cached = JSON.parse(localStorage.getItem("lumina_cached_books") || "[]");
+                              const without = cached.filter((b: Book) => b.id !== book.id);
+                              localStorage.setItem("lumina_cached_books", JSON.stringify([book, ...without].slice(0, 20)));
+                            } catch {}
+                            onSelectBook(book.id);
+                          }
+                        }}
+                        className={`flex-1 py-1.5 rounded-lg text-[10px] font-black transition-all ${
+                          isGlobal
+                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-600 hover:text-white'
+                            : 'bg-[#EEF5FA] text-[#5B8FB9] border border-[#5B8FB9]/30 hover:bg-[#5B8FB9] hover:text-white'
+                        }`}
+                      >
+                        {isGlobal ? (generatingBookId === book.id ? "..." : "Read") : "Read"}
+                      </button>
+                      {currentUser && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleSaveBook(book.id); }}
+                          title={savedBookIds.includes(book.id) ? "Remove from shelf" : "Save to My Shelf"}
+                          className={`w-7 py-1.5 rounded-lg text-sm border transition-all ${
+                            savedBookIds.includes(book.id)
+                              ? 'bg-amber-400 border-amber-400 text-white'
+                              : 'bg-white border-[#DCD9D0] text-slate-300 hover:border-amber-400 hover:text-amber-400'
+                          }`}
+                        >
+                          {savedBookIds.includes(book.id) ? "★" : "☆"}
+                        </button>
+                      )}
+                    </div>
                   </div>
                 );
               };
 
-              const renderShelfRow = (label: string, emoji: string, bookList: Book[], isGlobal = false, loading = false) => (
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <span className="text-base">{emoji}</span>
-                    <h3 className="text-sm font-black text-slate-700 uppercase tracking-widest">{label}</h3>
-                    {isGlobal && <span className="text-[9px] bg-emerald-50 text-emerald-700 border border-emerald-100 font-black px-2 py-0.5 rounded">Open Library</span>}
+              const renderShelfRow = (label: string, emoji: string, bookList: Book[], isGlobal = false, loading = false) => {
+                const rowId = `shelf-${label.replace(/\s+/g, "-").toLowerCase()}`;
+                const scroll = (dir: "l" | "r") => {
+                  const el = document.getElementById(rowId);
+                  if (el) el.scrollBy({ left: dir === "r" ? 620 : -620, behavior: "smooth" });
+                };
+                return (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-base">{emoji}</span>
+                        <h3 className="text-sm font-black text-slate-700 uppercase tracking-widest">{label}</h3>
+                        {isGlobal && <span className="text-[9px] bg-emerald-50 text-emerald-700 border border-emerald-100 font-black px-2 py-0.5 rounded">Open Library</span>}
+                      </div>
+                      {bookList.length > 3 && (
+                        <div className="flex gap-1">
+                          <button onClick={() => scroll("l")} className="w-7 h-7 rounded-full border border-[#DCD9D0] bg-white flex items-center justify-center hover:bg-[#5B8FB9] hover:text-white hover:border-[#5B8FB9] transition-all text-slate-500 text-sm font-bold shadow-sm">‹</button>
+                          <button onClick={() => scroll("r")} className="w-7 h-7 rounded-full border border-[#DCD9D0] bg-white flex items-center justify-center hover:bg-[#5B8FB9] hover:text-white hover:border-[#5B8FB9] transition-all text-slate-500 text-sm font-bold shadow-sm">›</button>
+                        </div>
+                      )}
+                    </div>
+                    {loading ? (
+                      <div className="flex items-center gap-3 py-4">
+                        <Loader2 className="w-5 h-5 animate-spin text-[#5B8FB9]" />
+                        <span className="text-xs text-slate-400">Loading titles...</span>
+                      </div>
+                    ) : bookList.length === 0 ? (
+                      <p className="text-xs text-slate-400 italic py-3">No titles found.</p>
+                    ) : (
+                      <div className="relative">
+                        <div id={rowId} className="flex gap-4 overflow-x-auto pb-3" style={{scrollbarWidth:"none", msOverflowStyle:"none"}}>
+                          {bookList.map((book) => renderBookCard(book, isGlobal))}
+                        </div>
+                        {/* Right fade gradient — signals more content */}
+                        <div className="absolute right-0 top-0 bottom-3 w-14 bg-gradient-to-l from-[#F7F4EE] to-transparent pointer-events-none" />
+                      </div>
+                    )}
                   </div>
-                  {loading ? (
-                    <div className="flex items-center gap-3 py-4">
-                      <Loader2 className="w-5 h-5 animate-spin text-[#5B8FB9]" />
-                      <span className="text-xs text-slate-400">Loading titles...</span>
-                    </div>
-                  ) : bookList.length === 0 ? (
-                    <p className="text-xs text-slate-400 italic py-3">No titles found.</p>
-                  ) : (
-                    <div className="flex gap-4 overflow-x-auto pb-3" style={{scrollbarWidth:'none'}}>
-                      {bookList.map((book) => renderBookCard(book, isGlobal))}
-                    </div>
-                  )}
-                </div>
-              );
+                );
+              };
 
               const subjectOptions = [
                 { key: "classics", label: "Classics", emoji: "📜" },
@@ -920,30 +983,60 @@ Return this exact shape:
                         </div>
                       </div>
 
-                      {/* Offline Bookshelf Row */}
-                      {renderShelfRow(
-                        "Your Bookshelf",
-                        "📚",
-                        books.filter(b => {
-                          const sub = selectedSubject.toLowerCase();
-                          if (sub === "classics") return b.category.toLowerCase().includes("classic");
-                          if (sub === "fantasy") return ["alice-wonderland", "peter-pan", "the-little-prince", "the-secret-garden"].includes(b.id);
-                          if (sub === "science_fiction") return ["astronomy-basics", "frankenstein", "the-time-machine"].includes(b.id);
-                          if (sub === "children") return ["alice-wonderland", "peter-pan", "the-little-prince", "the-secret-garden"].includes(b.id);
-                          if (sub === "romance") return ["pride-prejudice"].includes(b.id);
-                          if (sub === "mystery") return ["sherlock-holmes", "frankenstein"].includes(b.id);
-                          return true;
-                        }),
-                        false
-                      )}
+                      {/* My Shelf — only bookmarked books, login-gated */}
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-base">⭐</span>
+                          <h3 className="text-sm font-black text-slate-700 uppercase tracking-widest">My Shelf</h3>
+                          {!currentUser && <span className="text-[9px] text-slate-400 font-normal italic">Sign in to save books</span>}
+                        </div>
+                        {currentUser ? (
+                          savedBookIds.length > 0 ? (
+                            <div className="flex gap-4 overflow-x-auto pb-3 relative" style={{scrollbarWidth:"none"}}>
+                              <div className="absolute right-0 top-0 bottom-3 w-12 bg-gradient-to-l from-[#F7F4EE] to-transparent pointer-events-none z-10" />
+                              {[...books, ...subjectBooks].filter((b, i, arr) => savedBookIds.includes(b.id) && arr.findIndex(x => x.id === b.id) === i).map(b => renderBookCard(b, !books.find(x => x.id === b.id)))}
+                            </div>
+                          ) : (
+                            <div className="border border-dashed border-[#DCD9D0] rounded-2xl p-5 text-center">
+                              <p className="text-xs text-slate-400">Tap ☆ on any book to save it here.</p>
+                            </div>
+                          )
+                        ) : (
+                          <div className="border border-dashed border-[#DCD9D0] rounded-2xl p-5 text-center">
+                            <p className="text-xs text-slate-400">Sign in to save books to your personal shelf.</p>
+                          </div>
+                        )}
+                      </div>
 
-                      {/* Open Library Stream Row */}
-                      {renderShelfRow(
-                        subjectOptions.find(o => o.key === selectedSubject)?.label || selectedSubject,
-                        subjectOptions.find(o => o.key === selectedSubject)?.emoji || "🌎",
-                        subjectBooks,
-                        true,
-                        fetchingSubject
+                      {/* Open Library: 3 rows — Trending, New Arrivals, Classic picks */}
+                      {fetchingSubject ? (
+                        <div className="flex items-center gap-3 py-6">
+                          <Loader2 className="w-5 h-5 animate-spin text-[#5B8FB9]" />
+                          <span className="text-xs text-slate-400">Loading Open Library titles...</span>
+                        </div>
+                      ) : subjectBooks.length > 0 ? (
+                        <>
+                          {renderShelfRow(
+                            `${subjectOptions.find(o => o.key === selectedSubject)?.label || selectedSubject} — Top Picks`,
+                            subjectOptions.find(o => o.key === selectedSubject)?.emoji || "🌎",
+                            subjectBooks.slice(0, Math.ceil(subjectBooks.length / 3)),
+                            true
+                          )}
+                          {subjectBooks.length > 4 && renderShelfRow(
+                            "More in this genre",
+                            "📖",
+                            subjectBooks.slice(Math.ceil(subjectBooks.length / 3), Math.ceil(subjectBooks.length * 2 / 3)),
+                            true
+                          )}
+                          {subjectBooks.length > 8 && renderShelfRow(
+                            "Hidden gems",
+                            "💎",
+                            subjectBooks.slice(Math.ceil(subjectBooks.length * 2 / 3)),
+                            true
+                          )}
+                        </>
+                      ) : (
+                        <p className="text-xs text-slate-400 italic py-3">No Open Library titles found for this category.</p>
                       )}
                     </div>
                   ) : (
@@ -993,7 +1086,7 @@ Return this exact shape:
                           </div>
                         ) : onlineBooks.length > 0 ? (
                           <div className="flex gap-4 overflow-x-auto pb-3" style={{scrollbarWidth:'none'}}>
-                            {onlineBooks.map((book) => renderBookCard(book, true))}
+                            {[...onlineBooks, ...filteredSubjectBooks].filter((b,i,arr) => arr.findIndex(x=>x.id===b.id)===i).map((book) => renderBookCard(book, true))}
                           </div>
                         ) : (
                           <div className="text-center py-8 bg-[#F7F4EE]/40 rounded-2xl border border-dashed border-[#DCD9D0]">
