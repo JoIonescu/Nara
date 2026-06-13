@@ -49,11 +49,11 @@ export default function ReaderView({
 }: ReaderViewProps) {
   // Safe defaults for new prefs — backward compatible with old saved preferences
   const safePrefs = {
-    letterSpacing: 0.05,
-    wordSpacing: 0.1,
-    bionicReading: false,
-    syllableBreaking: false,
     ...preferences,
+    letterSpacing: preferences.letterSpacing ?? 0.05,
+    wordSpacing: preferences.wordSpacing ?? 0.1,
+    bionicReading: preferences.bionicReading ?? false,
+    syllableBreaking: preferences.syllableBreaking ?? false,
   };
   // Navigation State
   const activeChapterIndex = book.chapters.findIndex((c) => c.id === currentPosition.chapterId);
