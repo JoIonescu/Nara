@@ -47,10 +47,7 @@ export default function NaraLogo({ showText = true, className = "", size = "md" 
           id="nara-logo-text" 
           className={`${textSizes[size]} font-extrabold tracking-tight uppercase text-stone-900 flex items-center gap-1`}
         >
-          <span>Nara</span>
-          <span className="text-[10px] text-[#5B8FB9] bg-[#EEF5FA] px-1.5 py-0.5 rounded-md font-black tracking-widest uppercase ml-1">
-            Care
-          </span>
+          <span>Incluread</span>
         </span>
       )}
     </div>

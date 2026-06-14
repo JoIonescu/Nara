@@ -616,7 +616,7 @@ Return this exact shape:
             if (!detailBook) { setDetailedBookId(null); return null; }
             const diffSpec = DIFFICULTY_SPECS[detailBook.difficulty as keyof typeof DIFFICULTY_SPECS] || DIFFICULTY_SPECS["Easy"];
             const activeProfileClass = fontClasses[preferences.font];
-            const previewTextSample = (detailBook.chapters && detailBook.chapters[0]?.content[0]) || "This custom Open Library book is fully compatible with Nara's Visual Stress assistant tools. Adjust your line space, font typeface, and reading guides above.";
+            const previewTextSample = (detailBook.chapters && detailBook.chapters[0]?.content[0]) || "This custom Open Library book is fully compatible with Incluread's Visual Stress assistant tools. Adjust your line space, font typeface, and reading guides above.";
 
             return (
               <div className="bg-white border border-[#DCD9D0] rounded-3xl p-6 md:p-10 shadow-sm animate-fadeIn space-y-8">
@@ -877,7 +877,7 @@ Return this exact shape:
                   {/* Hero Header Greeting with date */}
                   <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                     <div>
-                      <h1 className="text-3xl font-extrabold tracking-tight">Nara Library</h1>
+                      <h1 className="text-3xl font-extrabold tracking-tight">Incluread Library</h1>
                       <p className="text-xs text-[#666666] mt-1 font-bold">
                         Browse, convert, and format millions of free public domain classics instantly with active support layers.
                       </p>
@@ -1369,7 +1369,7 @@ Return this exact shape:
 
                           {magicLinkSent && (
                             <p className="text-[10px] text-emerald-700 font-bold bg-emerald-50 p-2 rounded-lg border border-emerald-100 leading-normal">
-                              ✓ Check your inbox! We dispatched your Nara magic link.
+                              ✓ Check your inbox! We dispatched your Incluread magic link.
                             </p>
                           )}
 
@@ -1396,7 +1396,7 @@ Return this exact shape:
                             {currentUser.email ? currentUser.email.substring(0, 2).toUpperCase() : "R"}
                           </div>
                           <div>
-                            <p className="text-lg font-bold">Nara Active Reader</p>
+                            <p className="text-lg font-bold">Incluread Reader</p>
                             <p className="text-xs text-emerald-600 font-bold">✓ Synced: {currentUser.email}</p>
                           </div>
                         </div>

@@ -542,7 +542,7 @@ useEffect(() => {
   return (
     <div id="reader-shell" className={`min-h-screen ${shellBgClass} font-sans flex flex-col relative transition-all duration-300`}>
       
-      {/* 1. Header with minimalist Nara Logo style */}
+      {/* 1. Header with minimalist Incluread Logo style */}
       <header className={`h-16 border-b px-6 flex items-center justify-between backdrop-blur-sm sticky top-0 z-40 ${headerBgClass} transition-all duration-300`}>
         <div className="flex items-center gap-4">
           <button

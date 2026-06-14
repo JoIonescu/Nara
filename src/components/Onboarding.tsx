@@ -109,7 +109,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                 </h1>
                 
                 <p className="text-[#444444] text-xs leading-relaxed">
-                  Traditional interfaces can feel exhausting. Nara adapts to your eye comfort, cognitive pacing, and focus confidence. Watch our brief video tutorial tour below:
+                  Traditional interfaces can feel exhausting. Incluread adapts to your eye comfort, cognitive pacing, and focus confidence. Watch our brief video tutorial tour below:
                 </p>
 
                 {/* PREMIUM ACCESSIBLE INTERACTIVE TOUR VIDEO */}

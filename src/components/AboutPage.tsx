@@ -14,7 +14,7 @@ export default function AboutPage({ onBack }: AboutPageProps) {
       <div className="bg-white border-b border-[#DCD9D0] sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-6 py-4 flex items-center gap-4">
           <button onClick={onBack} className="flex items-center gap-2 text-xs font-bold text-[#5B8FB9] hover:text-[#3A6F9A] transition-colors">
-            <ArrowLeft className="w-4 h-4" /> Back to Nara
+            <ArrowLeft className="w-4 h-4" /> Back to Incluread
           </button>
           <div className="flex gap-1 ml-auto">
             {(["about", "privacy", "terms", "cookies"] as const).map((s) => (
@@ -42,7 +42,7 @@ export default function AboutPage({ onBack }: AboutPageProps) {
                 <span className="text-[#5B8FB9]">feel like a barrier.</span>
               </h1>
               <p className="text-lg text-[#444444] max-w-2xl mx-auto leading-relaxed">
-                Nara is an accessible reading platform designed to make digital content easier to read, understand, and retain for people with dyslexia, ADHD, visual stress, and other reading challenges.
+                Incluread is an accessible reading platform designed to make digital content easier to read, understand, and retain for people with dyslexia, ADHD, visual stress, and other reading challenges.
               </p>
             </div>
 
@@ -68,9 +68,9 @@ export default function AboutPage({ onBack }: AboutPageProps) {
               </div>
             </div>
 
-            {/* How Nara changes lives */}
+            {/* How Incluread changes lives */}
             <div className="space-y-6">
-              <h2 className="text-2xl font-black text-[#111111]">How Nara is changing lives</h2>
+              <h2 className="text-2xl font-black text-[#111111]">How Incluread is changing lives</h2>
               <div className="grid md:grid-cols-3 gap-4">
                 {[
                   { icon: <Brain className="w-5 h-5 text-[#5B8FB9]" />, title: "Reduces cognitive load", body: "Syllable breaks, bionic reading anchors, and word spacing reduce the mental effort of decoding text — freeing the brain to focus on meaning rather than letter-by-letter recognition." },
@@ -90,7 +90,7 @@ export default function AboutPage({ onBack }: AboutPageProps) {
             <div className="bg-white border border-[#DCD9D0] rounded-2xl p-8 space-y-6">
               <h2 className="text-2xl font-black text-[#111111]">Built on research</h2>
               <p className="text-sm text-[#444444] leading-relaxed">
-                Every feature in Nara is grounded in peer-reviewed dyslexia and reading science. We don't ship features because they're trendy — we ship them because the evidence supports them.
+                Every feature in Incluread is grounded in peer-reviewed dyslexia and reading science. We don't ship features because they're trendy — we ship them because the evidence supports them.
               </p>
               <div className="space-y-4">
                 {[
@@ -165,8 +165,8 @@ export default function AboutPage({ onBack }: AboutPageProps) {
               { title: "4. Third-party services", body: "Firebase (Google): authentication and database. Anthropic Claude API: AI reading assistance — text you send for explanation or simplification is processed by Anthropic. Open Library (Internet Archive): public domain book catalogue. None of these services receive your email address or personal data beyond what is necessary for the specific function." },
               { title: "5. Data retention", body: "Your account data is retained as long as your account is active. You may delete your account and all associated data at any time by emailing hello@nara.quest. Reading statistics for guest users reset daily; registered users reset every 30 days." },
               { title: "6. Your rights (GDPR)", body: "If you are in the EU/EEA or UK, you have the right to access, correct, or erase your personal data. You may also object to processing or request data portability. Contact hello@nara.quest to exercise these rights." },
-              { title: "7. Children", body: "Nara is designed for users aged 6 and above. Children under 13 must use Nara with parental consent. We do not knowingly collect data from children without parental permission." },
-              { title: "8. Changes", body: "We will notify registered users of material changes to this policy by email. Continued use of Nara after changes constitutes acceptance of the updated policy." },
+              { title: "7. Children", body: "Incluread is designed for users aged 6 and above. Children under 13 must use Incluread with parental consent. We do not knowingly collect data from children without parental permission." },
+              { title: "8. Changes", body: "We will notify registered users of material changes to this policy by email. Continued use of Incluread after changes constitutes acceptance of the updated policy." },
             ].map(({ title, body }) => (
               <div key={title} className="space-y-1">
                 <h2 className="font-bold text-[#111111]">{title}</h2>
@@ -184,14 +184,14 @@ export default function AboutPage({ onBack }: AboutPageProps) {
               <p className="text-xs text-[#888888]">Last updated: June 2026</p>
             </div>
             {[
-              { title: "1. Acceptance", body: "By accessing or using Nara at nara.quest, you agree to these Terms of Use. If you do not agree, please do not use the service." },
-              { title: "2. Description of service", body: "Nara is a web-based accessible reading platform that provides reading aids, AI-powered text assistance, and access to public domain literature. The service is provided as-is." },
-              { title: "3. User accounts", body: "You may use Nara without an account. Creating an account (via email magic link) allows you to sync preferences across devices. You are responsible for maintaining the security of your account." },
+              { title: "1. Acceptance", body: "By accessing or using Incluread at nara.quest, you agree to these Terms of Use. If you do not agree, please do not use the service." },
+              { title: "2. Description of service", body: "Incluread is a web-based accessible reading platform that provides reading aids, AI-powered text assistance, and access to public domain literature. The service is provided as-is." },
+              { title: "3. User accounts", body: "You may use Incluread without an account. Creating an account (via email magic link) allows you to sync preferences across devices. You are responsible for maintaining the security of your account." },
               { title: "4. Acceptable use", body: "You agree not to: attempt to reverse engineer or scrape the platform; use the AI features to generate harmful, misleading, or illegal content; circumvent any access controls; or use the service in a way that disrupts other users." },
-              { title: "5. Intellectual property", body: "Books available through the Open Library integration are public domain works. Nara's interface, branding, and codebase are proprietary. You may not reproduce, distribute, or create derivative works without written permission." },
+              { title: "5. Intellectual property", body: "Books available through the Open Library integration are public domain works. Incluread's interface, branding, and codebase are proprietary. You may not reproduce, distribute, or create derivative works without written permission." },
               { title: "6. AI-generated content", body: "Text simplifications, explanations, and summaries are generated by AI and may contain errors. They are provided as reading aids only, not as authoritative interpretations of the source text." },
-              { title: "7. Disclaimer", body: "Nara is provided without warranties of any kind. We do not guarantee uninterrupted access or that the service will meet all accessibility needs." },
-              { title: "8. Limitation of liability", body: "To the fullest extent permitted by law, Nara shall not be liable for any indirect, incidental, or consequential damages arising from your use of the service." },
+              { title: "7. Disclaimer", body: "Incluread is provided without warranties of any kind. We do not guarantee uninterrupted access or that the service will meet all accessibility needs." },
+              { title: "8. Limitation of liability", body: "To the fullest extent permitted by law, Incluread shall not be liable for any indirect, incidental, or consequential damages arising from your use of the service." },
               { title: "9. Governing law", body: "These terms are governed by the laws of the European Union and, where applicable, Polish law, without regard to conflict of law provisions." },
               { title: "10. Contact", body: "For questions about these terms, contact hello@nara.quest." },
             ].map(({ title, body }) => (
@@ -210,7 +210,7 @@ export default function AboutPage({ onBack }: AboutPageProps) {
               <h1 className="text-2xl font-black text-[#111111] mb-1">Cookie Policy</h1>
               <p className="text-xs text-[#888888]">Last updated: June 2026</p>
             </div>
-            <p className="text-xs text-[#444444]">Nara uses minimal cookies and local storage to function. We do not use advertising cookies, tracking pixels, or third-party analytics.</p>
+            <p className="text-xs text-[#444444]">Incluread uses minimal cookies and local storage to function. We do not use advertising cookies, tracking pixels, or third-party analytics.</p>
             <div className="overflow-x-auto">
               <table className="w-full text-xs border-collapse">
                 <thead>
@@ -245,7 +245,7 @@ export default function AboutPage({ onBack }: AboutPageProps) {
             </div>
             <div className="space-y-2">
               <h2 className="font-bold text-[#111111]">Managing cookies</h2>
-              <p className="text-xs text-[#444444]">You can clear all Nara cookies at any time by clearing your browser's local storage and cookies for nara.quest. Note that doing so will reset your reading preferences and sign you out. Nara cannot function without essential cookies.</p>
+              <p className="text-xs text-[#444444]">You can clear all Incluread cookies at any time by clearing your browser's local storage and cookies for nara.quest. Note that doing so will reset your reading preferences and sign you out. Incluread cannot function without essential cookies.</p>
             </div>
           </div>
         )}

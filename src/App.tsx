@@ -49,7 +49,7 @@ export default function App() {
       setMagicLinkStatus({ type: "loading", message: "Verifying your magic email link..." });
       let email = window.localStorage.getItem("emailForSignIn");
       if (!email) {
-        email = window.prompt("Please type your email to confirm signing back into Nara:");
+        email = window.prompt("Please type your email to confirm signing back into Incluread:");
       }
 
       if (email) {
@@ -58,7 +58,7 @@ export default function App() {
             window.localStorage.removeItem("emailForSignIn");
             setMagicLinkStatus({
               type: "success",
-              message: `Success! Signed in as ${result.user?.email || "Nara user"}!`
+              message: `Success! Signed in as ${result.user?.email || "Incluread user"}!`
             });
             window.history.replaceState({}, document.title, window.location.pathname);
           })
@@ -425,7 +425,7 @@ export default function App() {
       {/* Beta Banner */}
       <div className="w-full bg-[#1a1a2e] text-center py-2 px-4 text-[11px] font-semibold text-gray-300 flex items-center justify-center gap-2">
         <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#00A795] animate-pulse flex-shrink-0" />
-        Nara is in beta — we\'re actively building. Your feedback shapes what comes next.{" "}
+        Incluread is in beta — we\'re actively building. Your feedback shapes what comes next.{" "}
         <a href="mailto:hello@nara.quest" className="underline text-[#00A795] hover:text-white transition-colors">Share feedback →</a>
       </div>
 
