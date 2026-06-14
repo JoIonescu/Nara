@@ -1,6 +1,9 @@
 
 <img width="4248" height="1200" alt="incluread-logo" src="https://github.com/user-attachments/assets/14d46dba-16ee-4330-8095-49d8807ba43c" />
+
+
 IncluRead is an accessible reading platform designed to make digital content easier to read, understand, and retain for people with dyslexia, ADHD, visual stress, and other reading challenges. The name IncluRead comes from the idea of inclusion in reading. Every reader deserves a story they can follow.
+
 ## The journey to reading for everyone <br /> <br />
 
 
