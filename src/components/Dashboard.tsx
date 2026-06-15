@@ -393,6 +393,12 @@ Return this exact shape:
   const handleSignOut = async () => {
     try {
       await signOut(auth);
+      // Clear user-specific localStorage so next login starts fresh
+      localStorage.removeItem("lumina_saved_book_ids");
+      localStorage.removeItem("lumina_bookmarks");
+      localStorage.removeItem("lumina_stats");
+      localStorage.removeItem("lumina_position");
+      // Keep lumina_preferences (reading comfort settings — not personal data)
     } catch (err) {
       console.error("Sign out error", err);
     }
@@ -478,7 +484,20 @@ Return this exact shape:
   };
 
   // Resolve current read book if exists
-  const activeBook = books.find((b) => b.id === currentPosition.bookId) || books[0];
+  // Only set activeBook if currentPosition.bookId is a real saved book (not default)
+  const savedPositionBookId = (() => {
+    try {
+      const p = JSON.parse(localStorage.getItem("lumina_position") || "null");
+      return p?.bookId || null;
+    } catch { return null; }
+  })();
+  const activeBook = books.find((b) => b.id === (savedPositionBookId || currentPosition.bookId))
+    || (() => {
+        try {
+          const cached = JSON.parse(localStorage.getItem("lumina_cached_books") || "[]");
+          return cached.find((b: any) => b.id === (savedPositionBookId || currentPosition.bookId));
+        } catch { return null; }
+      })() || null;
 
   // Filters catalog
   const applyFiltersAndSort = (bookList: Book[]) => bookList.filter((book) => {
@@ -518,7 +537,7 @@ Return this exact shape:
       
       {/* HEADER: Geometric navigation toolbar */}
       <nav className={`h-16 border-b px-8 flex items-center justify-between backdrop-blur-sm shadow-xs sticky top-0 z-40 ${headerBgClass} ${borderClass} transition-all duration-300`}>
-        <NaraLogo showText={true} />
+        <NaraLogo showText={true} size="lg" />
         
         {/* Navigation tabs */}
         <div className="hidden md:flex gap-8">

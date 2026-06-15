@@ -159,7 +159,7 @@ export default function AboutPage({ onBack }: AboutPageProps) {
               <p className="text-xs text-[#888888]">Last updated: June 2026</p>
             </div>
             {[
-              { title: "1. Who we are", body: "Nara (\"we\", \"us\", \"our\") is an accessible reading platform available at nara.quest. For privacy enquiries, contact hello@nara.quest." },
+              { title: "1. Who we are", body: "Incluread (\"we\", \"us\", \"our\") is an accessible reading platform available at nara.quest. For privacy enquiries, contact hello@nara.quest." },
               { title: "2. What data we collect", body: "Account data: email address when you sign in via magic link. Reading preferences: font, theme, text size, spacing — stored locally and optionally in your account. Reading progress: chapter position, bookmarks, reading time — stored per-account to sync across devices. We do not collect names, payment data, or sensitive personal information." },
               { title: "3. How we use your data", body: "Solely to provide and improve the reading experience: syncing your preferences, restoring reading position, and displaying personalised reading statistics. We never sell, rent, or share your data with third parties for commercial purposes." },
               { title: "4. Third-party services", body: "Firebase (Google): authentication and database. Anthropic Claude API: AI reading assistance — text you send for explanation or simplification is processed by Anthropic. Open Library (Internet Archive): public domain book catalogue. None of these services receive your email address or personal data beyond what is necessary for the specific function." },

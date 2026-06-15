@@ -424,6 +424,8 @@ useEffect(() => {
     }
   };
 
+  const [bookmarkToast, setBookmarkToast] = useState<boolean>(false);
+
   // Fast Bookmark handler
   const triggerAddBookmark = () => {
     const activeText = activeChapter.content[activeParagraphIndex] || "";
@@ -436,6 +438,8 @@ useEffect(() => {
       timestamp: Date.now(),
     };
     onAddBookmark(newBookmark);
+    setBookmarkToast(true);
+    setTimeout(() => setBookmarkToast(false), 2000);
   };
 
   // Syllable breaking — pattern-based, no library needed
@@ -597,7 +601,7 @@ useEffect(() => {
           {/* Chapter Quick Selector card */}
           <div className={`w-full max-w-[700px] border rounded-2xl p-4 mb-6 flex justify-between items-center shadow-sm ${cardBgClass} transition-all duration-300`}>
             <button
-              onClick={goToPrevChapter}
+              onClick={(e) => { e.stopPropagation(); goToPrevChapter(); }}
               disabled={safeChapterIndex === 0}
               className={`p-2 border rounded-xl disabled:opacity-40 transition-all ${buttonClass}`}
               aria-label="Go to previous chapter"
@@ -611,7 +615,7 @@ useEffect(() => {
             </div>
             
             <button
-              onClick={goToNextChapter}
+              onClick={(e) => { e.stopPropagation(); goToNextChapter(); }}
               disabled={safeChapterIndex === book.chapters.length - 1}
               className={`p-2 border rounded-xl disabled:opacity-40 transition-all ${buttonClass}`}
               aria-label="Go to next chapter"
@@ -627,7 +631,7 @@ useEffect(() => {
               className={`text-xs border flex items-center gap-1 px-3 py-1.5 rounded-lg font-semibold transition-all ${buttonClass}`}
             >
               <BookmarkIcon className="w-4 h-4 text-[#5B8FB9]" />
-              <span>Bookmark spot</span>
+              <span>{bookmarkToast ? "Saved!" : "Bookmark"}</span>
             </button>
           </div>
 
@@ -711,7 +715,7 @@ useEffect(() => {
                             {(["little", "lot", "child"] as const).map((level) => (
                               <button key={level} onClick={(e) => { e.stopPropagation(); setSimplifyLevel(level); }}
                                 className={`text-[9px] font-black px-2 py-1 rounded transition-all uppercase ${simplifyLevel === level ? "bg-[#5B8FB9] text-white" : "text-slate-400 hover:text-[#5B8FB9]"}`}>
-                                {level === "little" ? "A little" : level === "lot" ? "A lot" : "For a child"}
+                                {level === "little" ? "Simpler" : level === "lot" ? "Much simpler" : "Child-friendly"}
                               </button>
                             ))}
                           </div>
@@ -1077,8 +1081,20 @@ useEffect(() => {
 
                   {aiExplainOutput && (
                     <div className="p-3 bg-green-50/50 rounded-xl border border-green-200 text-green-900 leading-relaxed max-h-[220px] overflow-y-auto">
-                      <p className="font-bold text-[10px] uppercase text-green-800 mb-1">AI Coach Output:</p>
-                      <p className="text-[11px] whitespace-pre-line">{aiExplainOutput}</p>
+                      <p className="font-bold text-[10px] uppercase text-green-800 mb-1">AI Coach</p>
+                      <div className="text-[11px] space-y-2">
+                        {aiExplainOutput
+                          .replace(/#{1,6}\s*/g, '')
+                          .replace(/\*\*([^*]+)\*\*/g, '$1')
+                          .replace(/\*([^*]+)\*/g, '$1')
+                          .replace(/^[-\u2022]\s*/gm, '')
+                          .split('\n')
+                          .filter((line: string) => line.trim())
+                          .map((line: string, i: number) => (
+                            <p key={i} className="leading-relaxed">{line.trim()}</p>
+                          ))
+                        }
+                      </div>
                     </div>
                   )}
                 </div>

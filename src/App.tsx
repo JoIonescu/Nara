@@ -450,6 +450,20 @@ export default function App() {
         <a href="mailto:hello@nara.quest" className="underline text-[#00A795] hover:text-white transition-colors">Share feedback →</a>
       </div>
 
+      {/* Cookie Banner */}
+      {showCookieBanner && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-[#1a1a2e] text-white px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-2xl border-t border-[#2d2d4e]">
+          <p className="text-xs text-gray-300 max-w-2xl leading-relaxed">
+            🍪 Incluread uses essential cookies to save your reading preferences and session. No tracking or advertising cookies.{" "}
+            <button onClick={() => setCurrentPage("about")} className="underline text-[#00A795] hover:text-white transition-colors">Learn more</button>
+          </p>
+          <div className="flex gap-2 flex-shrink-0">
+            <button onClick={() => { localStorage.setItem("nara_cookie_consent", "essential"); setShowCookieBanner(false); }} className="px-4 py-2 bg-[#00A795] text-white text-xs font-bold rounded-lg hover:bg-[#008f7e] transition-colors">Accept</button>
+            <button onClick={() => { localStorage.setItem("nara_cookie_consent", "declined"); setShowCookieBanner(false); }} className="px-4 py-2 border border-gray-600 text-gray-300 text-xs font-bold rounded-lg hover:border-gray-400 transition-colors">Essential only</button>
+          </div>
+        </div>
+      )}
+
       {magicLinkStatus && (
         <div className={`fixed top-4 right-4 z-50 p-4 rounded-2xl shadow-lg border text-xs font-bold max-w-sm flex flex-col gap-1 transition-all ${
           magicLinkStatus.type === "success"
@@ -492,7 +506,7 @@ export default function App() {
         <footer className="bg-[#1a1a2e] text-gray-400 text-xs mt-8">
           <div className="max-w-6xl mx-auto px-6 py-8 grid grid-cols-2 md:grid-cols-4 gap-6">
             <div>
-              <p className="text-white font-bold mb-2">Incluread</p>
+              <img src="/incluread-logo.png" alt="Incluread" className="h-12 w-auto mb-3 opacity-90" />
               <p className="leading-relaxed opacity-70">Accessible reading for every mind. Built for dyslexia, ADHD, and visual stress.</p>
             </div>
             <div>
@@ -516,7 +530,7 @@ export default function App() {
             </div>
           </div>
           <div className="border-t border-[#2d2d4e] px-6 py-4 text-center opacity-50">
-            © {new Date().getFullYear()} Incluread. All rights reserved. · nara.quest
+            © {new Date().getFullYear()} Incluread. All rights reserved.
           </div>
         </footer>
       )}
